@@ -1,0 +1,94 @@
+  this.lastLoginMsg = await this.ytSv.getLastLogin();
+        this.ytSv.insertLastLogin("yt"); //not need to use await
+
+
+ for (let index in obj2.roles) {
+          // console.log(key);
+          // console.log(obj2[0].roles[index].id);
+          //1 upload file menu
+          if (obj2.roles[index].id == 2) { //permission upload file
+            //this.items[1].disabled=false;
+            //this.mnuStatus["mnuUploadFile"]=false;
+            sessionStorage.setItem("mnuFileUpload", "false");
+
+          }
+          if (obj2.roles[index].id == 1) { //permission download file
+            //this.items[1].disabled=false;
+            //this.mnuStatus["mnuUploadFile"]=false;
+            sessionStorage.setItem("mnuFileDownload", "false");
+
+          }
+
+
+        }
+        //permission Login
+        sessionStorage.setItem("mnuChangePwd", "false");
+        sessionStorage.setItem("mnuResetPwd", "false");
+
+        if (this.use2FA == "1") {
+          this.hideLogout = true;
+          this.hide2FA = false;
+          sessionStorage.setItem('hideLogout', 'true');
+          sessionStorage.setItem('hide2FA', 'false');
+
+        }
+        else {
+          this.hideLogout = false;
+          this.hide2FA=true;
+          sessionStorage.setItem('hideLogout', 'false');
+          sessionStorage.setItem('hide2FA', 'true');
+          this.route.navigate(['/downloadfile']);
+        }
+        this.showMenu();
+
+        //console.log(obj2.);
+        //   this.token=j["accessToken"];
+        //sessionStorage.setItem("token", obj2.accessToken);
+      }, error => {
+        // console.log(JSON.stringify(error));
+      });
+start this
+    // chk2Period
+    // Map < String, String > res = new HashMap<>();
+    // const idcar_json={
+    //   "idcard":sessionStorage.getItem("idcard")
+    // }
+    this.url = this.ytSv.url + '/user2Period/' + sessionStorage.getItem("idcard");
+    // console.log(this.url);
+    header = {
+      headers: new HttpHeaders()
+        .set('Authorization', "Bearer " + sessionStorage.getItem("token")) //   this.response["accessToken"])
+    }
+    // this.response = await this.http.get(this.url, header).toPromise();
+    // console.log(this.response); <UserDetail[]>
+    // this.http.get(this.url, header)
+    //   .subscribe(response => {
+    await firstValueFrom(this.http.get(this.url, header)).
+      then(response => {
+        //console.log(JSON.stringify(response));
+        let j = JSON.stringify(response);
+
+        let obj5 = JSON.parse(j);
+        // console.log(obj5);
+        // console.log("***"+obj5.found+"*******");
+        // console.log(JSON.stringify(obj5))
+
+        if (obj5.found == "true") {
+          sessionStorage.setItem('has2Period', 'true');
+          sessionStorage.setItem('year', obj5.year);
+
+
+        }
+        else {
+          sessionStorage.setItem('year', '');
+          sessionStorage.setItem('has2Period', 'false');
+        }
+        // alert('2period'+sessionStorage.getItem('has2Period'));
+      }, error => {
+        // console.log(JSON.stringify(error));
+      });
+    //chk2Period
+
+
+    // alert(this.lastLoginMsg);
+  } //login
