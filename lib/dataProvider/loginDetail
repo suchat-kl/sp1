@@ -1,0 +1,69 @@
+class LoginDetail{
+   
+    
+    List<String> role=[];
+    String  deptG="",deptE="";
+    String deptName="";
+    String token="";
+    String userName="";
+    String month="",year="";
+    String dept="";
+    String div="";
+    String alertMsg="";
+    String beginDate="";
+    String endDate="";
+    bool validEdit=false;
+    bool passLogin=false;
+    String idcard="";
+    String use2FA="0";
+    String id="";
+    String titleBar="";
+/*
+get getPassLogin => _passLogin;
+ set setPassLogin(passLogin) => _passLogin = passLogin;
+
+
+    // String codeDel="";
+    // String status="";
+    
+    
+// LoginDetail(String token,String userName,List<String> role){
+//   token=token;
+//   userName=userName;
+//   role=role;
+// }
+
+
+ get getRole => _role;
+ set setRole(role) => _role = role;
+
+ get getToken => _token;
+ set setToken(token) => _token = token;
+
+ get getUserName => _userName;
+ set setUserName(userName) => _userName = userName;
+
+
+ get getDeptName => _deptName;
+ set setDeptName(deptName) => _deptName = deptName;
+
+ get getDeptG => _deptG;
+ set setDeptG(deptG) => _deptG = deptG;
+
+ get getDeptE => _deptE;
+ set setDeptE(deptE) => _deptE = deptE;
+
+ get getMonth => _month;
+ set setMonth(month) => _month = month;
+
+ get getYear => _year;
+
+  // set setPas
+
+  
+ set setYear(year) => _year = year;
+ 
+
+	*/
+    
+}
