@@ -18,6 +18,8 @@ class LoginDetail{
     String use2FA="0";
     String id="";
     String titleBar="";
+    String uploadFile="0";
+  String downloadFile="0";
 /*
 get getPassLogin => _passLogin;
  set setPassLogin(passLogin) => _passLogin = passLogin;

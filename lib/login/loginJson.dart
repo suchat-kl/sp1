@@ -1,33 +1,34 @@
 class Login {
-  String _id = "";
-  String _username = "";
-  String _email = "";
-  List<String> _roles = [];
-  String _tokenType = "";
-  String _accessToken = "";
-  String _deptName = "";
-  String _div = "";
+  String id = "";
+  String username = "";
+  String email = "";
+  // List<String> roles = [];
+  String tokenType = "";
+  String accessToken = "";
+  String deptName = "";
+  String div = "";
+  
   // Login() {}
   
-  Login(
-      {String? id,
-      String? username,
-      String? email,
-      List<String>? roles,
-      String? tokenType,
-      String? accessToken,
-      String? deptName,
-      String? div}) {
-    _id = id!;
-    _username = username!;
-    _email = email!;
-    _roles = roles!;
-    _tokenType = tokenType!;
-    _accessToken = accessToken!;
-    _deptName = deptName!;
-    _div = div!;
-  }
-
+  // Login(
+  //     {String? id,
+  //     String? username,
+  //     String? email,
+  //     List<String>? roles,
+  //     String? tokenType,
+  //     String? accessToken,
+  //     String? deptName,
+  //     String? div}) {
+  //   _id = id!;
+  //   _username = username!;
+  //   _email = email!;
+  //   _roles = roles!;
+  //   _tokenType = tokenType!;
+  //   _accessToken = accessToken!;
+  //   _deptName = deptName!;
+  //   _div = div!;
+  // }
+/*
   String get id => _id;
 
   set id(String id) => _id = id;
@@ -82,4 +83,5 @@ class Login {
     data['div'] = div;
     return data;
   }
+  */
 }

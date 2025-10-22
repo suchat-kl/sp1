@@ -37,7 +37,8 @@ class _MyLoginPageState extends State<MyLoginPage> {
   String password = '';
   bool cursorWait = false;
   String alertMsg = "";
-  String urlSal = "https://dbdoh.doh.go.th/saldoh";//:9000";
+
+  String urlSal = "https://dbdoh.doh.go.th/saldoh"; //:9000";
   // late FToast fToast;
   _MyLoginPageState() {
     //this.getMsg(loginDetail);
@@ -182,19 +183,13 @@ class _MyLoginPageState extends State<MyLoginPage> {
     //   context,
     // );
 
-    
-
     Map map = json.decode(response.body);
 
     // print(response.statusCode);
 
     if (response.statusCode == 200) {
-      
       loginDetail.token = map["accessToken"];
       loginDetail.passLogin = true;
-
-
-
 
       // this.passLogin=true;
       //'Authorization': 'Bearer $token',
@@ -289,7 +284,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
       //   duration: Duration(seconds: 1),
       // );
       // throw Exception('Failed to ');
-Message().showMsg(
+      Message().showMsg(
         "${response.statusCode} error  ==> ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง",
         TypeMsg.warning,
         context,
@@ -310,7 +305,11 @@ Message().showMsg(
           formKey.currentState!.save();
           // print('$userName : $password');
           // ignore: unused_local_variable
-          loginDetail.passLogin = await chkLogin(userName, password, loginDetail);
+          loginDetail.passLogin = await chkLogin(
+            userName,
+            password,
+            loginDetail,
+          );
 
           if (!loginDetail.passLogin) return;
           // print(msg.accessToken);
@@ -355,17 +354,37 @@ Message().showMsg(
           loginDetail.id = map["id"].toString();
           loginDetail.idcard = map["idcard"];
           loginDetail.use2FA = map["use2FA"];
-Message().showMsg(
-            "ยินดีต้อนรับ ${loginDetail.userName} เข้าสู่ระบบ",
-            TypeMsg.information,
-            context,
-          );
+          if (map["roles"] != null) {
+            try {
+              for (var v in map["roles"]) {
+                // if role entry is a map with an 'id' field, store the id; otherwise store the value
+                if (v is Map && v.containsKey('id')) {
+                  if (v['id'].toString() == ("2")) {
+                    loginDetail.uploadFile = "1";
+                  }
+                  if (v['id'].toString() == ("1")) {
+                    loginDetail.downloadFile = "1";
+                  }
+                } else {}
+              }
+            } catch (e) {
+              // ignore malformed roles data
+            }
+          }
+
+          // Message().showMsg(
+          //             "ยินดีต้อนรับ ${loginDetail.userName} เข้าสู่ระบบ",
+          //             TypeMsg.information,
+          //             context,
+          //           );
           if (kDebugMode) {
             debug.print("Login Detail:");
             debug.print(loginDetail.userName);
             debug.print(loginDetail.id);
             debug.print(loginDetail.idcard);
             debug.print(loginDetail.use2FA);
+            debug.print(loginDetail.uploadFile);
+            debug.print(loginDetail.downloadFile);
             debug.print("Login Detail:");
           }
 
@@ -377,6 +396,7 @@ Message().showMsg(
           //   print("not login");
           // }
           // SystemChannels.mouseCursor.invokeMethod<void>('setCursor', 'basic');
+          cursorWait = false;
         }
       },
       child: Container(
