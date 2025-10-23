@@ -435,11 +435,13 @@ class _MyLoginPageState extends State<MyLoginPage> {
                     WidgetSpan(child: Icon(Icons.login_rounded, size: 25)),
                     TextSpan(
                       text: " เข้าระบบ",
-                      // style: TextStyle(fontSize: 18, color: Colors.black),
-                      style: GoogleFonts.notoSansThai(
-                        fontSize: 20,
-                        color: Colors.black,
-                      ),
+                      style: TextStyle(fontSize: 20,
+                       fontFamily: 'Noto Sans Thai',
+                       color: Colors.black),
+                      // style: GoogleFonts.notoSansThai(
+                      //   fontSize: 20,
+                      //   color: Colors.black,
+                      // ),
                     ),
                   ],
                 ),
@@ -469,7 +471,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
                 hintText: "ชื่อผู้ใช้งาน",
                 icon: Icon(Icons.supervised_user_circle),
               ),
-              // style: TextStyle(fontSize: 18, color: Colors.black),
+              // style: TextStyle(fontSize: 20, color: Colors.black),
               style: GoogleFonts.notoSansThai(
                 fontSize: 20,
                 color: Colors.black,

@@ -48,7 +48,7 @@ dependencies:
   # responsive_ui: ^2.1.0
   responsive_ui: ^3.0.1
     # syncfusion_flutter_datepicker: ^19.3.55
-  syncfusion_flutter_datepicker: ^31.1.23
+  syncfusion_flutter_datepicker: ^31.2.3
   universal_html: ^2.0.8
   url_launcher: ^6.1.2
   another_flushbar: ^1.10.25
@@ -87,14 +87,15 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-assets:
-     - assets/images/doh.jpg
-     - assets/images/dpayManual.pdf   
-     - google_fonts/
-fonts:
-    - asset: fonts/NotoSansThai-Medium.ttf
+  assets:
+    - assets/images/      
+    - google_fonts/
+  fonts:
     - family: Noto Sans Thai
-         
+      fonts:
+        - asset: fonts/NotoSansThai-Regular.ttf
+        - asset: fonts/NotoSansThai-Bold.ttf
+          weight: 700       
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
