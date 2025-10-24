@@ -20,7 +20,7 @@ class Menu extends StatefulWidget {
 class _MenuState extends State<Menu> {
   // final LocalAuthentication _localAuth = LocalAuthentication();
   // Check if biometric authentication is available
-  int itemIndex = 0;
+  int itemIndex = 1;bool cursorWait = false;
   final formKey = GlobalKey<FormState>();
   // final _editableKey = GlobalKey<EditableState>();
   // bool _isBiometricAvailable = false;
@@ -34,6 +34,23 @@ class _MenuState extends State<Menu> {
     super.initState();
     // _checkBiometric();
     appTitle = widget.title; // tabName[itemIndex];
+    /*Consumer<LoginDetail>(
+      builder: (context, loginDetail, child) {
+        if (loginDetail.use2FA == "1") {
+          itemIndex = 0;
+          setState(() {
+            
+          });
+        } else {
+          itemIndex = 2;
+          setState(() {
+            
+          });
+        }
+        return Text("");
+      },
+    );
+*/
   }
 
   /*
@@ -137,22 +154,28 @@ class _MenuState extends State<Menu> {
             ],
           ),
       body: Consumer<LoginDetail>(
-        builder: (context, loginDetail, child) => FutureBuilder(
-          future: getDocumentRep(loginDetail),
-          builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Text("");
-            } else if (snapshot.hasError) {
-              return Text("ERROR: ${snapshot.error}");
-            }
-            // else if (snapshot.connectionState == ConnectionState.waiting)
-            //   return Center(child: CircularProgressIndicator());
-            else
-            // return Center(child: CircularProgressIndicator());
-            {
-              return visibilityPage(loginDetail);
-            }
-          },
+        builder: (context, loginDetail, child) => ListView(
+          scrollDirection: Axis.vertical,
+           children: <Widget>[
+            // cursorWait ? Center(child: CircularProgressIndicator()) : Text(""),
+          FutureBuilder(
+            future: getDocumentRep(loginDetail),
+            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Text("");
+              } else if (snapshot.hasError) {
+                return Text("ERROR: ${snapshot.error}");
+              }
+              // else if (snapshot.connectionState == ConnectionState.waiting)
+              //   return Center(child: CircularProgressIndicator());
+              else
+              // return Center(child: CircularProgressIndicator());
+              {
+                return visibilityPage(loginDetail);
+              }
+            },
+          ),
+        ],
         ),
       ),
       bottomNavigationBar: Consumer<LoginDetail>(
@@ -243,6 +266,11 @@ class _MenuState extends State<Menu> {
     loginDetail.token = "";
     loginDetail.userName = "";
     loginDetail.passLogin = false;
+    loginDetail.use2FA = "0";
+    loginDetail.has2Period = "false";
+    loginDetail.lastLoginMsg = "";
+    loginDetail.uploadFile = "0";
+    loginDetail.downloadFile = "0";
     // manaualView = false;
     /*
     this.itemIndex = 0;
@@ -270,6 +298,13 @@ class _MenuState extends State<Menu> {
   }
 
   Future<void> getDocumentRep(LoginDetail loginDetail) async {
+    if (loginDetail.use2FA == "1") {
+      itemIndex = 0;
+    } else {
+      itemIndex = 2;
+    }
+
+    
     /*
     if (logicalWidth == 0.0) {
       var pixelRatio = View.of(context).devicePixelRatio;
@@ -377,7 +412,7 @@ class _MenuState extends State<Menu> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 gradient: LinearGradient(
-                  colors: [Colors.blue.shade100, Colors.blue.shade400],
+                  colors: [Colors.blue.shade50, Colors.blue.shade200],
                 ),
               ),
               margin: EdgeInsets.all(10),
@@ -395,15 +430,23 @@ class _MenuState extends State<Menu> {
                         children: [
                           // Icon(Icons.fingerprint, size: 80, color: Colors.blue),
                           Image.asset(
-                            "assets/images/doh.jpg", // The path registered in pubspec.yaml
-                            width: 100, // Optional: set width
+                            "assets/images/doh.png", // The path registered in pubspec.yaml
+                            width: 150, // Optional: set width
                             height: 100, // Optional: set height
                             fit: BoxFit
                                 .cover, // Optional: control how the image fits
                           ),
                           SizedBox(height: 20),
                           Text(
-                            'เข้าสู่ระบบโดยใช้แอป ThaID',
+                            "เข้าใช้งานครั้งล่าสุดเมื่อ:",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontFamily: 'Noto Sans Thai',
+                              color: Colors.black,
+                            ),
+                          ),
+                          Text(
+                            loginDetail.lastLoginMsg,
                             // style: TextStyle(
                             //   fontSize: 20,
                             //   fontWeight: FontWeight.bold,

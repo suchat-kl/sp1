@@ -1,6 +1,5 @@
 class LoginDetail{
-   
-    
+ 
     List<String> role=[];
     String  deptG="",deptE="";
     String deptName="";
@@ -19,7 +18,10 @@ class LoginDetail{
     String id="";
     String titleBar="";
     String uploadFile="0";
-  String downloadFile="0";
+    String downloadFile="0";
+    String has2Period="false";
+    String year2Period="";
+    String lastLoginMsg="";
 /*
 get getPassLogin => _passLogin;
  set setPassLogin(passLogin) => _passLogin = passLogin;

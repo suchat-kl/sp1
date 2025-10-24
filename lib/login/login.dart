@@ -6,6 +6,7 @@ import 'dart:core';
 // import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:sp1/dataProvider/loginDetail';
 import 'package:sp1/message.dart';
 // import 'package:sp1/ShowAlertMessage.dart';
@@ -54,8 +55,10 @@ class _MyLoginPageState extends State<MyLoginPage> {
     // fToast.init(context);
   }
 
+  // late var theme;
   @override
   Widget build(BuildContext context) {
+    // theme = Theme.of(context);
     return Scaffold(
       //  key: globalKey,
       appBar: AppBar(
@@ -361,16 +364,42 @@ class _MyLoginPageState extends State<MyLoginPage> {
                 if (v is Map && v.containsKey('id')) {
                   if (v['id'].toString() == ("2")) {
                     loginDetail.uploadFile = "1";
-                  }
-                  if (v['id'].toString() == ("1")) {
+                  } else if (v['id'].toString() == ("1")) {
                     loginDetail.downloadFile = "1";
                   }
-                } else {}
+                } else {
+                  loginDetail.downloadFile = "0";
+                  loginDetail.uploadFile = "0";
+                }
               }
             } catch (e) {
               // ignore malformed roles data
             }
           }
+          url = "$urlSal/user2Period/$loginDetail.idcard";
+          //response =
+          response = await http.get(
+            Uri.parse(url),
+            headers: <String, String>{
+              'Access-Control-Allow-Origin': '*',
+              'Content-Type': 'application/json;charset=UTF-8',
+              'Accept': 'application/json; charset=UTF-8',
+              'Authorization': 'Bearer   ${loginDetail.token}',
+            },
+            // body: jsonEncode(param_body2),
+          );
+
+          map = json.decode(response.body);
+          if (map["found"] == "true") {
+            loginDetail.has2Period = map["found"];
+            loginDetail.year2Period = map["year"];
+          } else {
+            loginDetail.has2Period = "false";
+            loginDetail.year2Period = "";
+          }
+
+          loginDetail.lastLoginMsg = await getLastLogin(loginDetail.idcard);
+          insertLastLogin(loginDetail.idcard, "sp"); //not need to use await
 
           // Message().showMsg(
           //             "ยินดีต้อนรับ ${loginDetail.userName} เข้าสู่ระบบ",
@@ -385,6 +414,9 @@ class _MyLoginPageState extends State<MyLoginPage> {
             debug.print(loginDetail.use2FA);
             debug.print(loginDetail.uploadFile);
             debug.print(loginDetail.downloadFile);
+            debug.print(loginDetail.has2Period);
+            debug.print(loginDetail.year2Period);
+            debug.print(loginDetail.lastLoginMsg);
             debug.print("Login Detail:");
           }
 
@@ -435,9 +467,16 @@ class _MyLoginPageState extends State<MyLoginPage> {
                     WidgetSpan(child: Icon(Icons.login_rounded, size: 25)),
                     TextSpan(
                       text: " เข้าระบบ",
-                      style: TextStyle(fontSize: 20,
-                       fontFamily: 'Noto Sans Thai',
-                       color: Colors.black),
+                      // style: theme.textTheme.bodyLarge!.copyWith(
+                      //   fontSize: 20.0,
+                      //   color: Colors.black,
+                      // ),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontFamily: 'Noto Sans Thai',
+                        color: Colors.black,
+                      ),
+
                       // style: GoogleFonts.notoSansThai(
                       //   fontSize: 20,
                       //   color: Colors.black,
@@ -451,6 +490,60 @@ class _MyLoginPageState extends State<MyLoginPage> {
         ),
       ),
     );
+  }
+
+  Future<String> getLastLogin(String idcard) async {
+    String url = "$urlSal/findLastLogin?idcard=$idcard";
+    // print(url);
+    http.Response response = await http.post(
+      Uri.parse(url),
+      headers: <String, String>{
+        'Content-Type': 'application/json;charset=UTF-8',
+        'Accept': 'application/json; charset=UTF-8',
+      },
+      // body: jsonEncode(
+      //     <String, String>{"username": username, "password": password}),
+    );
+    Map map = json.decode(response.body);
+    // print(map);
+    // print(map.keys.first);
+    if (response.statusCode == 200) {
+      return map.keys.first;
+    }
+
+    return "";
+  }
+
+  Future<void> insertLastLogin(String idcard, String app) async {
+    String type = "M";
+    // DateTime datetime = DateTime.now();
+    // String last = datetime.toString();
+    String last = ""; //datetime.toString();
+    NumberFormat formatter = NumberFormat("00");
+    DateTime now = DateTime.now();
+    String d = formatter.format(now.day);
+    String m = formatter.format(now.month);
+    String y = formatter.format(now.year + 543);
+    String h = formatter.format(now.hour);
+    String mi = formatter.format(now.minute);
+    String s = formatter.format(now.second);
+    last = "$d/$m/$y  $h:$mi:$s";
+
+    String url =
+        "$urlSal/insertLastLogin?idcard=$idcard&type=$type&last='$last'&app=$app";
+    // print(url);
+    http.Response response = await http.post(
+      Uri.parse(url),
+      headers: <String, String>{
+        'Content-Type': 'application/json;charset=UTF-8',
+        'Accept': 'application/json; charset=UTF-8',
+      },
+      // body: jsonEncode(
+      //     <String, String>{"username": username, "password": password}),
+    );
+    // Map map = json.decode(response.body);
+    // print(map);
+    if (response.statusCode == 200) {}
   }
 
   Widget buildTextFieldEmail() {
@@ -535,20 +628,18 @@ class _MyLoginPageState extends State<MyLoginPage> {
             divison: const Division(colS: 12, colM: 12, colL: 12),
             child: Row(
               children: <Widget>[
-                // Image.asset(
-                //   "assets/images/doh.jpg",
-                //   height: 20,
-                //   width: 20,
-                // ),
-                // SizedBox(
-                //   width: 7,
-                // ),
-                Text(
-                  "ระบบงานสลิปใบรับรองภาษี กรมทางหลวง",
-                  // style: TextStyle(fontSize: 15, color: Colors.black)
-                  style: GoogleFonts.notoSansThai(
-                    fontSize: 20,
-                    color: Colors.black,
+                Image.asset("assets/images/doh.png", height: 100, width: 150),
+                SizedBox(width: 7),
+                Expanded(
+                  child: Text(
+                    "ระบบงานสลิปใบรับรองภาษี กรมทางหลวง",
+                    maxLines: 5,
+                    overflow: TextOverflow.ellipsis,
+                    // style: TextStyle(fontSize: 15, color: Colors.black)
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 20,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
               ],
@@ -569,7 +660,8 @@ class _MyLoginPageState extends State<MyLoginPage> {
     // await ShowAlertMsg().getAlertMessage(loginDetail);
     // await DateRange().getRangeDate(loginDetail);
     if (loginDetail.alertMsg != "") return;
-    loginDetail.alertMsg = "สวัสดีชาวโลก";
+    loginDetail.alertMsg =
+        "ใช้งานผ่านเว็บเบราว์เซอร์ได้ที่ลิงก์ https://dbdoh.doh.go.th/yt";
   }
 
   Widget buildMsg(LoginDetail loginDetail) {
@@ -587,13 +679,40 @@ class _MyLoginPageState extends State<MyLoginPage> {
                   // TextSpan(
                   //   text: "Click ",
                   // ),
-                  WidgetSpan(child: Icon(Icons.message_sharp, size: 25)),
-                  TextSpan(
-                    text: loginDetail.alertMsg,
-                    // style: TextStyle(fontSize: 18, color: Colors.black),
-                    style: GoogleFonts.notoSansThai(
-                      fontSize: 20,
-                      color: Colors.black,
+                  WidgetSpan(
+                    child: GestureDetector(
+                      onTap: () async {
+                        String url = "https://dbdoh.doh.go.th/yt/";
+                        final Uri url0 = Uri.parse(url);
+
+                        if (!await launchUrl(url0)) {
+                          throw 'Could not launch $url0';
+                        }
+                      },
+                      child: Row(
+                        children: [
+                          Icon(Icons.webhook_rounded, size: 40),
+                          SizedBox(width: 5),
+                          Expanded(
+                            child: Text(
+                              loginDetail.alertMsg,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontFamily: 'Noto Sans Thai',
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+
+                          //   text: loginDetail.alertMsg,
+                          //   // style: TextStyle(fontSize: 18, color: Colors.black),
+                          //   style: GoogleFonts.notoSansThai(
+                          //     fontSize: 20,
+                          //     color: Colors.black,
+
+                          // ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -622,12 +741,8 @@ class _MyLoginPageState extends State<MyLoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Expanded(child: buildButtonSignIn(loginDetail)),
-              // SizedBox(
-              //   width: 10,
-              // ),
-              // Expanded(
-              //   child: buildButtonManual(loginDetail),
-              // ),
+              SizedBox(width: 10),
+              Expanded(child: buildButtonManual(loginDetail)),
             ],
           ),
         ],
@@ -639,7 +754,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
   Widget buildButtonManual(LoginDetail loginDetail) {
     return InkWell(
       onTap: () async {
-        String url = "https://dbdoh.doh.go.th/dp/assets/images/dpayManual.pdf";
+        String url = "https://dbdoh.doh.go.th/yt/assets/images/ytManual.pdf";
         final Uri url0 = Uri.parse(url);
 
         if (!await launchUrl(url0)) throw 'Could not launch $url0';
@@ -648,10 +763,10 @@ class _MyLoginPageState extends State<MyLoginPage> {
         constraints: BoxConstraints.expand(height: 50),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: Colors.green[200],
+          // color: Colors.green[200],
         ),
-        margin: EdgeInsets.only(top: 16),
-        padding: EdgeInsets.all(12),
+        margin: EdgeInsets.only(top: 5),
+        padding: EdgeInsets.all(5),
         child: Responsive(
           children: <Widget>[
             Div(
@@ -667,7 +782,11 @@ class _MyLoginPageState extends State<MyLoginPage> {
                     WidgetSpan(child: Icon(Icons.help, size: 25)),
                     TextSpan(
                       text: " คู่มือการใช้งาน",
-                      style: TextStyle(fontSize: 18, color: Colors.black),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontFamily: 'Noto Sans Thai',
+                        color: Colors.black,
+                      ),
                     ),
                   ],
                 ),
