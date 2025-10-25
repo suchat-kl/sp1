@@ -39,7 +39,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
   bool cursorWait = false;
   String alertMsg = "";
 
-  String urlSal = "https://dbdoh.doh.go.th/saldoh"; //:9000";
+  // String urlSal = "https://dbdoh.doh.go.th/saldoh"; //:9000";
   // late FToast fToast;
   _MyLoginPageState() {
     //this.getMsg(loginDetail);
@@ -161,7 +161,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
     String password,
     LoginDetail loginDetail,
   ) async {
-    String url = "$urlSal/login";
+    String url = "${loginDetail.urlSal}/login";
     http.Response response = await http.post(
       Uri.parse(url),
       headers: <String, String>{
@@ -332,7 +332,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
 
           //save last login
           //http.Response response;
-          String url = "$urlSal/userLogin/$userName";
+          String url = "${loginDetail.urlSal}/userLogin/$userName";
           //response =
           http.Response response = await http.get(
             Uri.parse(url),
@@ -376,7 +376,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
               // ignore malformed roles data
             }
           }
-          url = "$urlSal/user2Period/$loginDetail.idcard";
+          url = "${loginDetail.urlSal}/user2Period/$loginDetail.idcard";
           //response =
           response = await http.get(
             Uri.parse(url),
@@ -398,9 +398,10 @@ class _MyLoginPageState extends State<MyLoginPage> {
             loginDetail.year2Period = "";
           }
 
-          loginDetail.lastLoginMsg = await getLastLogin(loginDetail.idcard);
-          insertLastLogin(loginDetail.idcard, "sp"); //not need to use await
-
+          loginDetail.lastLoginMsg = await getLastLogin(loginDetail.idcard,loginDetail);
+          insertLastLogin(loginDetail.idcard, "sp",loginDetail); //not need to use await
+          loginDetail.firstChk2FA = true;
+          loginDetail.pass2FA = false;
           // Message().showMsg(
           //             "ยินดีต้อนรับ ${loginDetail.userName} เข้าสู่ระบบ",
           //             TypeMsg.information,
@@ -417,6 +418,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
             debug.print(loginDetail.has2Period);
             debug.print(loginDetail.year2Period);
             debug.print(loginDetail.lastLoginMsg);
+            debug.print(loginDetail.firstChk2FA);
             debug.print("Login Detail:");
           }
 
@@ -492,8 +494,8 @@ class _MyLoginPageState extends State<MyLoginPage> {
     );
   }
 
-  Future<String> getLastLogin(String idcard) async {
-    String url = "$urlSal/findLastLogin?idcard=$idcard";
+  Future<String> getLastLogin(String idcard,LoginDetail loginDetail) async {
+    String url = "${loginDetail.urlSal}/findLastLogin?idcard=$idcard";
     // print(url);
     http.Response response = await http.post(
       Uri.parse(url),
@@ -514,7 +516,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
     return "";
   }
 
-  Future<void> insertLastLogin(String idcard, String app) async {
+  Future<void> insertLastLogin(String idcard, String app,LoginDetail loginDetail) async {
     String type = "M";
     // DateTime datetime = DateTime.now();
     // String last = datetime.toString();
@@ -530,7 +532,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
     last = "$d/$m/$y  $h:$mi:$s";
 
     String url =
-        "$urlSal/insertLastLogin?idcard=$idcard&type=$type&last='$last'&app=$app";
+        "${loginDetail.urlSal}/insertLastLogin?idcard=$idcard&type=$type&last='$last'&app=$app";
     // print(url);
     http.Response response = await http.post(
       Uri.parse(url),
@@ -573,7 +575,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
               //     ? 'ชื่อผู้ใช้งานไม่ถูกต้อง'
               //     : null,
               onSaved: (value) => userName = value.toString(),
-              keyboardType: TextInputType.number,
+              keyboardType: TextInputType.text,
             ),
           ),
         ],

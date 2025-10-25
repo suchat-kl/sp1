@@ -22,6 +22,9 @@ class LoginDetail{
     String has2Period="false";
     String year2Period="";
     String lastLoginMsg="";
+    bool firstChk2FA=false;
+    bool pass2FA=false;
+    String urlSal = "https://dbdoh.doh.go.th/saldoh";
 /*
 get getPassLogin => _passLogin;
  set setPassLogin(passLogin) => _passLogin = passLogin;

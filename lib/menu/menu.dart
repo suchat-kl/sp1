@@ -1,11 +1,20 @@
 // ignore_for_file: library_private_types_in_public_api
 
 // import 'dart:io';
+
+import 'dart:convert';
+// import 'dart:core' as debug;
+
+// import 'package:flutter/foundation.dart';
+// import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 // import 'package:local_auth/local_auth.dart';
 // import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
+import 'package:responsive_ui/responsive_ui.dart';
+// import 'package:sp1/showAlertDialog.dart';
 import '../dataProvider/loginDetail';
 import '../message.dart';
 
@@ -14,43 +23,29 @@ class Menu extends StatefulWidget {
   const Menu({super.key, required this.title});
   final String title;
   @override
+  @override
   _MenuState createState() => _MenuState();
 }
 
 class _MenuState extends State<Menu> {
   // final LocalAuthentication _localAuth = LocalAuthentication();
   // Check if biometric authentication is available
-  int itemIndex = 1;bool cursorWait = false;
+  int itemIndex = 1;
+  bool cursorWait = false;
   final formKey = GlobalKey<FormState>();
   // final _editableKey = GlobalKey<EditableState>();
   // bool _isBiometricAvailable = false;
   // String _authorized = 'Not Authorized';
-  String appTitle = ""; // "ลงทะเบียน";
+  String appTitle = "", code2FA = ""; // "ลงทะเบียน";
   // List<BiometricType> availableBiometrics = [];
   // List tabName = ['ลงทะเบียน', 'เข้าระบบ', 'ภาษี', 'สลิป', 'รายละเอียด'];
   List tabName = ['เข้าระบบ', 'ภาษี', 'สลิป'];
+  @override
   @override
   void initState() {
     super.initState();
     // _checkBiometric();
     appTitle = widget.title; // tabName[itemIndex];
-    /*Consumer<LoginDetail>(
-      builder: (context, loginDetail, child) {
-        if (loginDetail.use2FA == "1") {
-          itemIndex = 0;
-          setState(() {
-            
-          });
-        } else {
-          itemIndex = 2;
-          setState(() {
-            
-          });
-        }
-        return Text("");
-      },
-    );
-*/
   }
 
   /*
@@ -120,6 +115,7 @@ class _MenuState extends State<Menu> {
     });
   }
 */
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,28 +150,22 @@ class _MenuState extends State<Menu> {
             ],
           ),
       body: Consumer<LoginDetail>(
-        builder: (context, loginDetail, child) => ListView(
-          scrollDirection: Axis.vertical,
-           children: <Widget>[
-            // cursorWait ? Center(child: CircularProgressIndicator()) : Text(""),
-          FutureBuilder(
-            future: getDocumentRep(loginDetail),
-            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Text("");
-              } else if (snapshot.hasError) {
-                return Text("ERROR: ${snapshot.error}");
-              }
-              // else if (snapshot.connectionState == ConnectionState.waiting)
-              //   return Center(child: CircularProgressIndicator());
-              else
-              // return Center(child: CircularProgressIndicator());
-              {
-                return visibilityPage(loginDetail);
-              }
-            },
-          ),
-        ],
+        builder: (context, loginDetail, child) => FutureBuilder(
+          future: getDocumentRep(loginDetail),
+          builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Text("ERROR: ${snapshot.error}");
+            }
+            // else if (snapshot.connectionState == ConnectionState.waiting)
+            //   return Center(child: CircularProgressIndicator());
+            else
+            // return Center(child: CircularProgressIndicator());
+            {
+              return visibilityPage(loginDetail);
+            }
+          },
         ),
       ),
       bottomNavigationBar: Consumer<LoginDetail>(
@@ -271,6 +261,8 @@ class _MenuState extends State<Menu> {
     loginDetail.lastLoginMsg = "";
     loginDetail.uploadFile = "0";
     loginDetail.downloadFile = "0";
+    loginDetail.firstChk2FA = false;
+    loginDetail.pass2FA = false;
     // manaualView = false;
     /*
     this.itemIndex = 0;
@@ -298,13 +290,18 @@ class _MenuState extends State<Menu> {
   }
 
   Future<void> getDocumentRep(LoginDetail loginDetail) async {
+    if (!loginDetail.firstChk2FA) {
+      return;
+    } else {
+      loginDetail.firstChk2FA = false;
+    }
     if (loginDetail.use2FA == "1") {
       itemIndex = 0;
     } else {
       itemIndex = 2;
     }
+    // return null;
 
-    
     /*
     if (logicalWidth == 0.0) {
       var pixelRatio = View.of(context).devicePixelRatio;
@@ -392,8 +389,202 @@ class _MenuState extends State<Menu> {
     return Text("");
   }
 
-  void processLogin(LoginDetail loginDetail) {
-    Message().showMsg("ไม่มีระบบสแกนลายนิ้วมือ!!!", TypeMsg.warning, context);
+  bool isNumeric(String? s) {
+    if (s == null) {
+      return false;
+    }
+    return double.tryParse(s) != null;
+  }
+
+  Future<void> processLogin(LoginDetail loginDetail) async {
+    if (code2FA.length < 6) {
+      Message().showMsg(
+        "รหัสผ่านสองขั้นตอนต้องเท่ากับสิบสองหลัก",
+        TypeMsg.warning,
+        context,
+      );
+      return;
+    }
+    //RegExp specialCharacters = RegExp(r'[.,+\-]');
+    if (code2FA.contains(RegExp(r'[.,+\-]'))) {
+      Message().showMsg(
+        "รหัสผ่านสองขั้นตอนต้องไม่มีสัญลักษณ์ . + -",
+        TypeMsg.warning,
+        context,
+      );
+      return;
+    }
+    if (!isNumeric(code2FA)) {
+      Message().showMsg(
+        "รหัสผ่านสองขั้นตอนต้องเป็นตัวเลขเท่านั้น",
+        TypeMsg.warning,
+        context,
+      );
+      return;
+    }
+    String url =
+        "${loginDetail.urlSal}/verify-2fa?username=${loginDetail.userName}&code=$code2FA";
+    // AlertDialogMsg().showAlertDialog(context, code2FA, url);
+
+    http.Response response = await http.get(
+      Uri.parse(url),
+      headers: <String, String>{
+        // 'Access-Control-Allow-Origin': '*',
+        // 'Content-Type': 'application/json;charset=UTF-8',
+        // 'Accept': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer   ${loginDetail.token}',
+      },
+      // body: jsonEncode(<String, String>{
+      //   "username": userName,
+      //   "password": password,
+      // }),
+    );
+
+    Map map = json.decode(response.body);
+
+    // print(response.statusCode);
+
+    if (response.statusCode == 200) {
+      // Message().showMsg(url, TypeMsg.warning, context);
+      // if (kDebugMode) {
+      //   debug.print(map["valid"]);
+      // }
+      if (map["valid"] == "true") {
+        loginDetail.pass2FA = true;
+        // Message().showMsg(map["valid"], TypeMsg.warning, context);
+      }
+    }
+
+    if (loginDetail.pass2FA) {
+      Message().showMsg(
+        "ยินดีต้อนรับเข้าสู่ระบบ...",
+        TypeMsg.information,
+        context,
+      );
+      itemIndex = 2;
+      // setState(() {
+
+      // });
+    } else {
+      Message().showMsg(
+        "รหัสผ่าน 2 ขั้นตอนไม่ถูกต้อง!!!",
+        TypeMsg.warning,
+        context,
+      );
+    }
+    setState(() {});
+    // return null;
+  }
+
+  Widget buildTextField(String code) {
+    String hint = "";
+    if (code == "code") {
+      hint = "รหัสผ่าน2ขั้นตอน";
+    }
+    return Container(
+      padding: EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        // color: Colors.yellow[50],
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Responsive(
+        children: <Widget>[
+          Div(
+            divison: const Division(colS: 12, colM: 12, colL: 12),
+            child: TextFormField(
+              // onTap: ()=>{colors.},
+              decoration: InputDecoration(
+                labelText: hint,
+                hintText: hint,
+                icon: Icon(Icons.password_rounded),
+              ),
+              // style: TextStyle(fontSize: 20, color: Colors.black),
+              style: GoogleFonts.notoSansThai(
+                fontSize: 20,
+                color: Colors.black,
+              ),
+              // validator: (value) => value.toString().length != 3
+              //     ? 'ชื่อผู้ใช้งานไม่ถูกต้อง'
+              //     : null,
+              // onSaved: (value) {
+              //   if (code == "code") {
+              //     code2FA = value.toString();
+              //   }
+              // },
+              onChanged: (value) {
+                if (code == "code") {
+                  code2FA = value.toString();
+                }
+              },
+
+              maxLength: code == "code" ? 12 : 4,
+              keyboardType: code == "code"
+                  ? TextInputType.number
+                  : TextInputType.text,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Container buildImage(LoginDetail loginDetail) {
+    return Container(
+      padding: EdgeInsets.all(5),
+      margin: EdgeInsets.symmetric(vertical: 5),
+      // decoration: BoxDecoration(
+      //     color: Colors.yellow[50], borderRadius: BorderRadius.circular(16)),
+      child: Responsive(
+        children: <Widget>[
+          Div(
+            divison: const Division(colS: 12, colM: 12, colL: 12),
+            child: Row(
+              children: <Widget>[
+                Image.asset("assets/images/doh.png", height: 100, width: 150),
+                SizedBox(width: 7),
+                Expanded(
+                  child: Text(
+                    "ระบบงานสลิปใบรับรองภาษี กรมทางหลวง",
+                    maxLines: 5,
+                    overflow: TextOverflow.ellipsis,
+                    // style: TextStyle(fontSize: 15, color: Colors.black)
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 20,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Div(
+            divison: const Division(colS: 12, colM: 12, colL: 12),
+            child: Column(
+              children: <Widget>[
+                SizedBox(height: 20),
+                Text(
+                  "เข้าใช้งานครั้งล่าสุดเมื่อ:",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontFamily: 'Noto Sans Thai',
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  loginDetail.lastLoginMsg,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontFamily: 'Noto Sans Thai',
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget login(LoginDetail loginDetail) {
@@ -404,6 +595,7 @@ class _MenuState extends State<Menu> {
           color: Colors.white,
           child: Center(
             child: Container(
+              width: 800,
               constraints: BoxConstraints(
                 maxWidth: double.infinity,
                 minWidth: 450.0,
@@ -429,55 +621,45 @@ class _MenuState extends State<Menu> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           // Icon(Icons.fingerprint, size: 80, color: Colors.blue),
-                          Image.asset(
-                            "assets/images/doh.png", // The path registered in pubspec.yaml
-                            width: 150, // Optional: set width
-                            height: 100, // Optional: set height
-                            fit: BoxFit
-                                .cover, // Optional: control how the image fits
-                          ),
-                          SizedBox(height: 20),
-                          Text(
-                            "เข้าใช้งานครั้งล่าสุดเมื่อ:",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontFamily: 'Noto Sans Thai',
-                              color: Colors.black,
-                            ),
-                          ),
-                          Text(
-                            loginDetail.lastLoginMsg,
-                            // style: TextStyle(
-                            //   fontSize: 20,
-                            //   fontWeight: FontWeight.bold,
-                            // ),
-                            style: GoogleFonts.notoSansThai(fontSize: 20),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          SizedBox(height: 10),
+                          // Image.asset(
+                          //   "assets/images/doh.png", // The path registered in pubspec.yaml
+                          //   width: 150, // Optional: set width
+                          //   height: 100, // Optional: set height
+                          //   fit: BoxFit
+                          //       .cover, // Optional: control how the image fits
+                          // ),
+                          buildImage(loginDetail),
+                          // SizedBox(height: 20),
+
                           // Text('Available biometrics: ${_availableBiometrics.join(', ')}'),
-                          SizedBox(height: 30),
-                          ElevatedButton.icon(
-                            onPressed:
-                                // _isBiometricAvailable ? _authenticate : null,
-                                () => processLogin(loginDetail),
-                            icon: Icon(Icons.login_sharp),
-                            label: Text('เข้าระบบ'),
-                            style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.blue.shade900,
-                              // backgroundColor: Colors.lightGreenAccent,
-                              textStyle: GoogleFonts.notoSansThai(
-                                fontSize: 20,
-                                // fontWeight: FontWeight.bold
-                              ),
-                              // minimumSize: Size(30, 100),
-                              // maximumSize: "25",
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 30,
-                                vertical: 15,
-                              ),
-                            ),
-                          ),
+                          SizedBox(height: 15),
+                          buildTextField("code"),
+                          SizedBox(height: 20),
+                          loginDetail.pass2FA || loginDetail.use2FA == "0"
+                              ? Text("")
+                              : ElevatedButton.icon(
+                                  onPressed:
+                                      // _isBiometricAvailable ? _authenticate : null,
+                                      () async =>
+                                          await processLogin(loginDetail),
+                                  icon: Icon(Icons.login_sharp),
+                                  label: Text('เข้าระบบ'),
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.blue.shade900,
+                                    // backgroundColor: Colors.lightGreenAccent,
+                                    textStyle: GoogleFonts.notoSansThai(
+                                      fontSize: 20,
+                                      // fontWeight: FontWeight.bold
+                                    ),
+                                    // minimumSize: Size(30, 100),
+                                    // maximumSize: "25",
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 30,
+                                      vertical: 15,
+                                    ),
+                                  ),
+                                ),
+
                           SizedBox(height: 20),
                           // Text('Status: $_authorized'),
                         ],
