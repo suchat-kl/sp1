@@ -36,7 +36,7 @@ class _MenuState extends State<Menu> {
   // final _editableKey = GlobalKey<EditableState>();
   // bool _isBiometricAvailable = false;
   // String _authorized = 'Not Authorized';
-  String appTitle = "", code2FA = ""; // "ลงทะเบียน";
+  String appTitle = "", code2FA = "",year=""; // "ลงทะเบียน";
   // List<BiometricType> availableBiometrics = [];
   // List tabName = ['ลงทะเบียน', 'เข้าระบบ', 'ภาษี', 'สลิป', 'รายละเอียด'];
   List tabName = ['เข้าระบบ', 'ภาษี', 'สลิป'];
@@ -371,12 +371,16 @@ class _MenuState extends State<Menu> {
   Widget selectMethod(int choice, LoginDetail loginDetail) {
     switch (choice) {
       case 1:
-        return login(loginDetail);
+        return loginDetail.use2FA == "1"
+            ? login(loginDetail)
+            : loginDetail.use2FA == "0"
+            ? Text("")
+            : Text("");
       //register(loginDetail);
       case 2:
-        return Text("");
+        return repTax(loginDetail);
       case 3:
-        return Text("");
+        return repSlip(loginDetail);
       case 4:
       //return preview(loginDetail);
       case 5:
@@ -457,7 +461,7 @@ class _MenuState extends State<Menu> {
 
     if (loginDetail.pass2FA) {
       Message().showMsg(
-        "ยินดีต้อนรับเข้าสู่ระบบ...",
+        "ยินดีต้อนรับ ${loginDetail.userName} เข้าสู่ระบบ...",
         TypeMsg.information,
         context,
       );
@@ -481,6 +485,9 @@ class _MenuState extends State<Menu> {
     if (code == "code") {
       hint = "รหัสผ่าน2ขั้นตอน";
     }
+    else if (code == "year") {
+      hint = "ปี พ.ศ.";
+    }
     return Container(
       padding: EdgeInsets.all(5),
       decoration: BoxDecoration(
@@ -496,7 +503,7 @@ class _MenuState extends State<Menu> {
               decoration: InputDecoration(
                 labelText: hint,
                 hintText: hint,
-                icon: Icon(Icons.password_rounded),
+                icon: code=="code"?Icon(Icons.wifi_password):Icon(Icons.date_range_rounded),
               ),
               // style: TextStyle(fontSize: 20, color: Colors.black),
               style: GoogleFonts.notoSansThai(
@@ -514,6 +521,9 @@ class _MenuState extends State<Menu> {
               onChanged: (value) {
                 if (code == "code") {
                   code2FA = value.toString();
+                }
+                else if (code == "year") {
+                  year = value.toString();
                 }
               },
 
@@ -660,49 +670,167 @@ class _MenuState extends State<Menu> {
                                   ),
                                 ),
 
-                          SizedBox(height: 20),
-                          // Text('Status: $_authorized'),
+                         
+                         
                         ],
                       ),
                     ),
 
-                    // buildImage("เข้าระบบ ", loginDetail),
-                    // showImg("login", loginDetail),
-                    (Center(
-                      child: Row(
+                    
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+
+  Widget repTax(LoginDetail loginDetail) {
+    return ListView(
+      scrollDirection: Axis.vertical,
+      children: <Widget>[
+        Container(
+          color: Colors.white,
+          child: Center(
+            child: Container(
+              width: 800,
+              constraints: BoxConstraints(
+                maxWidth: double.infinity,
+                minWidth: 450.0,
+              ),
+              // width: 450.0,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  colors: [Colors.blue.shade50, Colors.blue.shade200],
+                ),
+              ),
+              margin: EdgeInsets.all(10),
+              padding: EdgeInsets.all(10),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  //Image.file(image)
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Center(
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // SizedBox(
-                          //   child: selectGallery("login"),
-                          //   width: (logicalWidth / 2) - 25,
-                          // ),
-                          SizedBox(width: 5),
-                          // SizedBox(
-                          //   child: selectCamera("login"),
-                          //   width: (logicalWidth / 2) - 25,
-                          // ),
+                        children: [                          
+                          buildImage(loginDetail),                         
+                          SizedBox(height: 15),
+                          buildTextField("year"),
+                          SizedBox(height: 20),
+                          loginDetail.pass2FA || loginDetail.use2FA == "0"
+                              ? 
+                               ElevatedButton.icon(
+                                  onPressed:                                
+                                      () async =>
+                                          await processLogin(loginDetail),
+                                  icon: Icon(Icons.login_sharp),
+                                  label: Text('รายงานภาษี'),
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.blue.shade900,
+                                    // backgroundColor: Colors.lightGreenAccent,
+                                    textStyle: GoogleFonts.notoSansThai(
+                                      fontSize: 20,
+                                      // fontWeight: FontWeight.bold
+                                    ),
+                                    // minimumSize: Size(30, 100),
+                                    // maximumSize: "25",
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 30,
+                                      vertical: 15,
+                                    ),
+                                  ),
+                                ):Text(""),
+                                               
                         ],
                       ),
-                    )),
-                    // buildButtonRegister(loginDetail, "login"),
-                    // loginDetail.token == ""
-                    //     ? Text("")
-                    //     : buildButtonRegister(loginDetail, "saveImg"),
-                    /*
-                      loginDetail.token == ""
-                          ? Text("")
-                          : foundPhoneId && (!errPhone)
-                              ? buildButtonRegister(loginDetail, "cancelPhone")
-                              : Text(""),
-                      loginDetail.token == ""
-                          ? Text("")
-                          : foundFingerPrint
-                              ? buildButtonRegister(
-                                  loginDetail, "cancelFingerPrint")
-                              : Text(""),
-
-                              */
-                    // buildButtonRegister(loginDetail, "manual"),
+                    ),
+                  
+                         
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+   Widget repSlip(LoginDetail loginDetail) {
+    return ListView(
+      scrollDirection: Axis.vertical,
+      children: <Widget>[
+        Container(
+          color: Colors.white,
+          child: Center(
+            child: Container(
+              width: 800,
+              constraints: BoxConstraints(
+                maxWidth: double.infinity,
+                minWidth: 450.0,
+              ),
+              // width: 450.0,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  colors: [Colors.blue.shade50, Colors.blue.shade200],
+                ),
+              ),
+              margin: EdgeInsets.all(10),
+              padding: EdgeInsets.all(10),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  //Image.file(image)
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [                          
+                          buildImage(loginDetail),                         
+                          SizedBox(height: 15),
+                          buildTextField("year"),
+ SizedBox(height: 15),
+Text("month"),
+                          SizedBox(height: 20),
+                          loginDetail.pass2FA || loginDetail.use2FA == "0"
+                              ? 
+                              ElevatedButton.icon(
+                                  onPressed:                                
+                                      () async =>
+                                          await processLogin(loginDetail),
+                                  icon: Icon(Icons.login_sharp),
+                                  label: Text('รายงานสลิป'),
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.blue.shade900,
+                                    // backgroundColor: Colors.lightGreenAccent,
+                                    textStyle: GoogleFonts.notoSansThai(
+                                      fontSize: 20,
+                                      // fontWeight: FontWeight.bold
+                                    ),
+                                    // minimumSize: Size(30, 100),
+                                    // maximumSize: "25",
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 30,
+                                      vertical: 15,
+                                    ),
+                                  ),
+                                ):Text(""),
+                                               
+                        ],
+                      ),
+                    ),
+                  
+                         
                   ],
                 ),
               ),
