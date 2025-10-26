@@ -10,6 +10,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 // import 'package:local_auth/local_auth.dart';
 // import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -36,16 +37,42 @@ class _MenuState extends State<Menu> {
   // final _editableKey = GlobalKey<EditableState>();
   // bool _isBiometricAvailable = false;
   // String _authorized = 'Not Authorized';
-  String appTitle = "", code2FA = "",year=""; // "ลงทะเบียน";
+  String appTitle = "",
+      code2FA = "",
+      taxYear = "",
+      curMonth = "",
+      curYear = ""; // "ลงทะเบียน";
   // List<BiometricType> availableBiometrics = [];
   // List tabName = ['ลงทะเบียน', 'เข้าระบบ', 'ภาษี', 'สลิป', 'รายละเอียด'];
   List tabName = ['เข้าระบบ', 'ภาษี', 'สลิป'];
+  List<DropdownMenuItem<String>> monthName = [
+    DropdownMenuItem(value: "01", child: Text("มกราคม")),
+    DropdownMenuItem(value: "02", child: Text("กุมภาพันธ์")),
+    DropdownMenuItem(value: "03", child: Text("มีนาคม")),
+    DropdownMenuItem(value: "04", child: Text("เมษายน")),
+    DropdownMenuItem(value: "05", child: Text("พฤษภาคม")),
+    DropdownMenuItem(value: "06", child: Text("มิถุนายน")),
+    DropdownMenuItem(value: "07", child: Text("กรกฎาคม")),
+    DropdownMenuItem(value: "08", child: Text("สิงหาคม")),
+    DropdownMenuItem(value: "09", child: Text("กันยายน")),
+    DropdownMenuItem(value: "10", child: Text("ตุลาคม")),
+    DropdownMenuItem(value: "11", child: Text("พฤศจิกายน")),
+    DropdownMenuItem(value: "12", child: Text("ธันวาคม")),
+  ];
+
   @override
   @override
   void initState() {
     super.initState();
     // _checkBiometric();
     appTitle = widget.title; // tabName[itemIndex];
+    DateTime now = DateTime.now();
+    final DateFormat formatter = DateFormat('yyyy-MM-dd');
+    final String formatted = formatter.format(now);
+    taxYear = formatted.split("-")[0];
+    taxYear = (int.parse(taxYear) - 1 + 543).toString().trim(); //tax year
+    curMonth = formatted.split("-")[1];
+    curYear = (int.parse(taxYear) + 1).toString().trim();
   }
 
   /*
@@ -403,7 +430,7 @@ class _MenuState extends State<Menu> {
   Future<void> processLogin(LoginDetail loginDetail) async {
     if (code2FA.length < 6) {
       Message().showMsg(
-        "รหัสผ่านสองขั้นตอนต้องเท่ากับสิบสองหลัก",
+        "รหัสผ่านสองขั้นตอนต้องเท่ากับหกหลัก",
         TypeMsg.warning,
         context,
       );
@@ -481,12 +508,21 @@ class _MenuState extends State<Menu> {
   }
 
   Widget buildTextField(String code) {
-    String hint = "";
+    String hint = "", defaultVal = "";
+    int maxLen = 0;
     if (code == "code") {
       hint = "รหัสผ่าน2ขั้นตอน";
-    }
-    else if (code == "year") {
+      maxLen = 6;
+    } else if (code == "year") {
       hint = "ปี พ.ศ.";
+      maxLen = 4;
+      if (itemIndex == 1) //tax
+      {
+        defaultVal = taxYear;
+      } else if (itemIndex == 2) //slip
+      {
+        defaultVal = curYear;
+      }
     }
     return Container(
       padding: EdgeInsets.all(5),
@@ -503,15 +539,18 @@ class _MenuState extends State<Menu> {
               decoration: InputDecoration(
                 labelText: hint,
                 hintText: hint,
-                icon: code=="code"?Icon(Icons.wifi_password):Icon(Icons.date_range_rounded),
+                icon: code == "code"
+                    ? Icon(Icons.wifi_password)
+                    : Icon(Icons.date_range_rounded),
               ),
               // style: TextStyle(fontSize: 20, color: Colors.black),
+              initialValue: defaultVal,
               style: GoogleFonts.notoSansThai(
                 fontSize: 20,
                 color: Colors.black,
               ),
-              // validator: (value) => value.toString().length != 3
-              //     ? 'ชื่อผู้ใช้งานไม่ถูกต้อง'
+              // validator: (value) => value.toString().length != maxLen
+              //     ? 'ความยาวตัวอักษรไม่เท่ากับ $maxLen'
               //     : null,
               // onSaved: (value) {
               //   if (code == "code") {
@@ -521,16 +560,22 @@ class _MenuState extends State<Menu> {
               onChanged: (value) {
                 if (code == "code") {
                   code2FA = value.toString();
-                }
-                else if (code == "year") {
-                  year = value.toString();
+                } else if (code == "year") {
+                  if (itemIndex == 1) //tax
+                  {
+                    taxYear = value.toString();
+                  } else if (itemIndex == 2) //slip
+                  {
+                    curYear = value.toString();
+                  }
                 }
               },
 
-              maxLength: code == "code" ? 12 : 4,
-              keyboardType: code == "code"
-                  ? TextInputType.number
-                  : TextInputType.text,
+              maxLength: maxLen,
+              keyboardType: TextInputType.number,
+              // keyboardType: code == "code"
+              //     ? TextInputType.number
+              //     : TextInputType.text,
             ),
           ),
         ],
@@ -630,14 +675,6 @@ class _MenuState extends State<Menu> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Icon(Icons.fingerprint, size: 80, color: Colors.blue),
-                          // Image.asset(
-                          //   "assets/images/doh.png", // The path registered in pubspec.yaml
-                          //   width: 150, // Optional: set width
-                          //   height: 100, // Optional: set height
-                          //   fit: BoxFit
-                          //       .cover, // Optional: control how the image fits
-                          // ),
                           buildImage(loginDetail),
                           // SizedBox(height: 20),
 
@@ -669,14 +706,9 @@ class _MenuState extends State<Menu> {
                                     ),
                                   ),
                                 ),
-
-                         
-                         
                         ],
                       ),
                     ),
-
-                    
                   ],
                 ),
               ),
@@ -686,7 +718,6 @@ class _MenuState extends State<Menu> {
       ],
     );
   }
-
 
   Widget repTax(LoginDetail loginDetail) {
     return ListView(
@@ -720,17 +751,15 @@ class _MenuState extends State<Menu> {
                     Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [                          
-                          buildImage(loginDetail),                         
+                        children: [
+                          buildImage(loginDetail),
                           SizedBox(height: 15),
                           buildTextField("year"),
                           SizedBox(height: 20),
                           loginDetail.pass2FA || loginDetail.use2FA == "0"
-                              ? 
-                               ElevatedButton.icon(
-                                  onPressed:                                
-                                      () async =>
-                                          await processLogin(loginDetail),
+                              ? ElevatedButton.icon(
+                                  onPressed: () async =>
+                                      await processLogin(loginDetail),
                                   icon: Icon(Icons.login_sharp),
                                   label: Text('รายงานภาษี'),
                                   style: ElevatedButton.styleFrom(
@@ -747,13 +776,11 @@ class _MenuState extends State<Menu> {
                                       vertical: 15,
                                     ),
                                   ),
-                                ):Text(""),
-                                               
+                                )
+                              : Text(""),
                         ],
                       ),
                     ),
-                  
-                         
                   ],
                 ),
               ),
@@ -763,7 +790,8 @@ class _MenuState extends State<Menu> {
       ],
     );
   }
-   Widget repSlip(LoginDetail loginDetail) {
+
+  Widget repSlip(LoginDetail loginDetail) {
     return ListView(
       scrollDirection: Axis.vertical,
       children: <Widget>[
@@ -795,19 +823,17 @@ class _MenuState extends State<Menu> {
                     Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [                          
-                          buildImage(loginDetail),                         
+                        children: [
+                          buildImage(loginDetail),
                           SizedBox(height: 15),
                           buildTextField("year"),
- SizedBox(height: 15),
-Text("month"),
+                          SizedBox(height: 15),
+                          buildDropDownMonth(loginDetail),
                           SizedBox(height: 20),
                           loginDetail.pass2FA || loginDetail.use2FA == "0"
-                              ? 
-                              ElevatedButton.icon(
-                                  onPressed:                                
-                                      () async =>
-                                          await processLogin(loginDetail),
+                              ? ElevatedButton.icon(
+                                  onPressed: () async =>
+                                      await processLogin(loginDetail),
                                   icon: Icon(Icons.login_sharp),
                                   label: Text('รายงานสลิป'),
                                   style: ElevatedButton.styleFrom(
@@ -824,13 +850,11 @@ Text("month"),
                                       vertical: 15,
                                     ),
                                   ),
-                                ):Text(""),
-                                               
+                                )
+                              : Text(""),
                         ],
                       ),
                     ),
-                  
-                         
                   ],
                 ),
               ),
@@ -838,6 +862,44 @@ Text("month"),
           ),
         ),
       ],
+    );
+  }
+
+  Container buildDropDownMonth(LoginDetail loginDetail) {
+    //loginDetail.getMonth.toString();
+    return Container(
+      constraints: BoxConstraints(
+        minWidth: 500.0,
+        // maxWidth: 500.0,
+      ),
+      // width: 500,
+      // alignment: Alignment.center,
+      padding: EdgeInsets.all(5),
+      margin: EdgeInsets.only(top: 5),
+      decoration: BoxDecoration(
+        // color: Colors.yellow[50],
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: DropdownButton<String>(
+        // hint: Text("month"),
+        focusColor: Colors.black,
+        elevation: 8,
+
+        //  autofocus: true,
+        //  icon: Icon(Icons.share_arrival_time_outlined,textDirection: TextDirection.ltr,) ,
+        style: TextStyle(
+          fontSize: 20, //loginDetail.logicalWidth * 0.06 * (1 / 3), //16,
+          color: Colors.black,
+          fontFamily: 'Noto Sans Thai',
+        ),
+        value: curMonth,
+        items: monthName,
+        onChanged: (value) {
+          setState(() {
+            curMonth = value.toString();
+          });
+        },
+      ),
     );
   }
 }
