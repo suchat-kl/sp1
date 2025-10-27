@@ -15,6 +15,8 @@ import 'package:intl/intl.dart';
 // import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_ui/responsive_ui.dart';
+import 'package:sp1/showAlertDialog.dart';
+import 'package:url_launcher/url_launcher.dart';
 // import 'package:sp1/showAlertDialog.dart';
 import '../dataProvider/loginDetail';
 import '../message.dart';
@@ -33,6 +35,9 @@ class _MenuState extends State<Menu> {
   // Check if biometric authentication is available
   int itemIndex = 1;
   bool cursorWait = false;
+  String pwdType = "idcard";
+  String pwd = "x";
+  bool accType = true;
   final formKey = GlobalKey<FormState>();
   // final _editableKey = GlobalKey<EditableState>();
   // bool _isBiometricAvailable = false;
@@ -154,11 +159,11 @@ class _MenuState extends State<Menu> {
             title: Text(
               appTitle,
               style: GoogleFonts.notoSansThai(
-                fontSize: 20,
+                fontSize: 15,
                 color: Colors.white,
               ),
 
-              // style: TextStyle(color: Colors.white, fontSize: 20,),
+              // style: TextStyle(color: Colors.white, fontSize: 15,),
             ),
             centerTitle: true,
             actions: <Widget>[
@@ -460,9 +465,9 @@ class _MenuState extends State<Menu> {
     http.Response response = await http.get(
       Uri.parse(url),
       headers: <String, String>{
-        // 'Access-Control-Allow-Origin': '*',
-        // 'Content-Type': 'application/json;charset=UTF-8',
-        // 'Accept': 'application/json; charset=UTF-8',
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json;charset=UTF-8',
+        'Accept': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer   ${loginDetail.token}',
       },
       // body: jsonEncode(<String, String>{
@@ -543,10 +548,10 @@ class _MenuState extends State<Menu> {
                     ? Icon(Icons.wifi_password)
                     : Icon(Icons.date_range_rounded),
               ),
-              // style: TextStyle(fontSize: 20, color: Colors.black),
+              // style: TextStyle(fontSize: 15, color: Colors.black),
               initialValue: defaultVal,
               style: GoogleFonts.notoSansThai(
-                fontSize: 20,
+                fontSize: 15,
                 color: Colors.black,
               ),
               // validator: (value) => value.toString().length != maxLen
@@ -583,6 +588,193 @@ class _MenuState extends State<Menu> {
     );
   }
 
+  Widget buildPwdRep() {
+    return Container(
+      padding: EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        // color: Colors.yellow[50],
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Responsive(
+        children: <Widget>[
+          itemIndex == 1
+              ? Text("")
+              : Div(
+                  divison: const Division(colS: 12, colM: 12, colL: 12),
+                  child: Expanded(
+                    child: CheckboxListTile(
+                      activeColor: Colors.green,
+                      title: Text(
+                        "แสดงเลขบัญชีธนาคาร",
+                        style: GoogleFonts.notoSansThai(
+                          fontSize: 15,
+                          color: Colors.black,
+                        ),
+                      ),
+                      value: accType,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          accType = value!;
+                        });
+                      },
+                      controlAffinity:
+                          ListTileControlAffinity.leading, // checkbox at start
+                    ),
+                  ),
+                ),
+
+          Div(
+            divison: const Division(colS: 12, colM: 12, colL: 12),
+            child: Expanded(
+              child: ListTile(
+                contentPadding: EdgeInsets.all(0),
+                title: Text(
+                  "ไม่ใช้รหัสผ่านในการสร้างรายงาน",
+                  style: GoogleFonts.notoSansThai(
+                    fontSize: 15,
+                    color: Colors.black,
+                  ),
+                ),
+                leading: Radio<String>(
+                  toggleable: false, //unselect ==null
+                  value: "none",
+                  // ignore: deprecated_member_use
+                  groupValue: pwdType,
+                  // ignore: deprecated_member_use
+                  onChanged: (String? value) {
+                    setState(() {
+                      pwdType = "none";
+                      pwd = "x";
+                    });
+                  },
+                  activeColor: Colors.green,
+                ),
+              ),
+            ),
+          ),
+
+          Div(
+            divison: const Division(colS: 12, colM: 12, colL: 12),
+            child: Expanded(
+              child: ListTile(
+                contentPadding: EdgeInsets.all(0),
+                title: Text(
+                  "ใช้เลขบัตรประชาชนในการสร้างรหัสผ่าน13ตัว",
+                  style: GoogleFonts.notoSansThai(
+                    fontSize: 15,
+                    color: Colors.black,
+                  ),
+                ),
+                leading: Radio<String>(
+                  toggleable: false, //unselect ==null
+                  value: "idcard",
+                  // ignore: deprecated_member_use
+                  groupValue: pwdType,
+                  // ignore: deprecated_member_use
+                  onChanged: (String? value) {
+                    setState(() {
+                      pwdType = "idcard";
+                      pwd = "x";
+                    });
+                  },
+                  activeColor: Colors.green,
+                ),
+              ),
+            ),
+          ),
+          Div(
+            divison: const Division(colS: 12, colM: 12, colL: 12),
+            child: Expanded(
+              child: ListTile(
+                contentPadding: EdgeInsets.all(0),
+                title: Text(
+                  "ใช้วันเกิดในการสร้างรหัสผ่าน(วันที่2หลักเดือน2หลักพศ4หลัก)",
+                  style: GoogleFonts.notoSansThai(
+                    fontSize: 15,
+                    color: Colors.black,
+                  ),
+                ),
+                leading: Radio<String>(
+                  toggleable: false, //unselect ==null
+                  value: "birthdate",
+                  // ignore: deprecated_member_use
+                  groupValue: pwdType,
+                  // ignore: deprecated_member_use
+                  onChanged: (String? value) {
+                    setState(() {
+                      pwdType = "birthdate";
+                      pwd = "x";
+                    });
+                  },
+                  activeColor: Colors.green,
+                ),
+              ),
+            ),
+          ),
+
+          Div(
+            divison: const Division(colS: 12, colM: 12, colL: 12),
+            child: Expanded(
+              child: ListTile(
+                contentPadding: EdgeInsets.all(0),
+                title: Text(
+                  "กำหนดรหัสผ่านเอง",
+                  style: GoogleFonts.notoSansThai(
+                    fontSize: 15,
+                    color: Colors.black,
+                  ),
+                ),
+                leading: Radio<String>(
+                  toggleable: false, //unselect ==null
+                  value: "custom",
+                  // ignore: deprecated_member_use
+                  groupValue: pwdType,
+                  // ignore: deprecated_member_use
+                  onChanged: (String? value) {
+                    setState(() {
+                      pwdType = "custom";
+                    });
+                  },
+                  activeColor: Colors.green,
+                ),
+              ),
+            ),
+          ),
+          Div(
+            divison: const Division(colS: 12, colM: 12, colL: 12),
+            child: Expanded(
+              child: TextFormField(
+                // onTap: ()=>{colors.},
+                decoration: InputDecoration(
+                  labelText: "กำหนดรหัสผ่าน3-10ตัว",
+                  hintText: "กำหนดรหัสผ่าน3-10ตัว",
+                  icon: Icon(Icons.vpn_key_rounded),
+                ),
+                // style: TextStyle(fontSize: 15, color: Colors.black),
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 15,
+                  color: Colors.black,
+                ),
+                enabled: pwdType == "custom" ? true : false,
+                maxLength: 10,
+                validator: (value) =>
+                    value.toString().length < 3 || value.toString().length > 10
+                    ? 'ความยาวตัวอักษรต้องอยู่ระหว่าง 3-10 ตัว'
+                    : null,
+                onChanged: (value) {
+                  pwd = value.toString();
+                },
+
+                // maxLength: maxLen,
+                keyboardType: TextInputType.text,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Container buildImage(LoginDetail loginDetail) {
     return Container(
       padding: EdgeInsets.all(5),
@@ -604,7 +796,7 @@ class _MenuState extends State<Menu> {
                     overflow: TextOverflow.ellipsis,
                     // style: TextStyle(fontSize: 15, color: Colors.black)
                     style: GoogleFonts.notoSansThai(
-                      fontSize: 20,
+                      fontSize: 15,
                       color: Colors.black,
                     ),
                   ),
@@ -616,23 +808,27 @@ class _MenuState extends State<Menu> {
             divison: const Division(colS: 12, colM: 12, colL: 12),
             child: Column(
               children: <Widget>[
-                SizedBox(height: 20),
-                Text(
-                  "เข้าใช้งานครั้งล่าสุดเมื่อ:",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontFamily: 'Noto Sans Thai',
-                    color: Colors.black,
-                  ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  loginDetail.lastLoginMsg,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontFamily: 'Noto Sans Thai',
-                    color: Colors.black,
-                  ),
+                SizedBox(height: 5),
+                Row(
+                  children: [
+                    Text(
+                      "ใช้งานล่าสุด:",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontFamily: 'Noto Sans Thai',
+                        color: Colors.black,
+                      ),
+                    ),
+                    SizedBox(width: 5),
+                    Text(
+                      loginDetail.lastLoginMsg,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontFamily: 'Noto Sans Thai',
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -676,12 +872,12 @@ class _MenuState extends State<Menu> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           buildImage(loginDetail),
-                          // SizedBox(height: 20),
+                          // SizedBox(height: 5),
 
                           // Text('Available biometrics: ${_availableBiometrics.join(', ')}'),
-                          SizedBox(height: 15),
+                          SizedBox(height: 5),
                           buildTextField("code"),
-                          SizedBox(height: 20),
+                          SizedBox(height: 5),
                           loginDetail.pass2FA || loginDetail.use2FA == "0"
                               ? Text("")
                               : ElevatedButton.icon(
@@ -695,7 +891,7 @@ class _MenuState extends State<Menu> {
                                     foregroundColor: Colors.blue.shade900,
                                     // backgroundColor: Colors.lightGreenAccent,
                                     textStyle: GoogleFonts.notoSansThai(
-                                      fontSize: 20,
+                                      fontSize: 15,
                                       // fontWeight: FontWeight.bold
                                     ),
                                     // minimumSize: Size(30, 100),
@@ -739,8 +935,8 @@ class _MenuState extends State<Menu> {
                   colors: [Colors.blue.shade50, Colors.blue.shade200],
                 ),
               ),
-              margin: EdgeInsets.all(10),
-              padding: EdgeInsets.all(10),
+              margin: EdgeInsets.all(5),
+              padding: EdgeInsets.all(5),
               child: Form(
                 key: formKey,
                 child: Column(
@@ -753,20 +949,22 @@ class _MenuState extends State<Menu> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           buildImage(loginDetail),
-                          SizedBox(height: 15),
+                          SizedBox(height: 5),
                           buildTextField("year"),
-                          SizedBox(height: 20),
+                          SizedBox(height: 5),
+                          buildPwdRep(),
+                          SizedBox(height: 5),
                           loginDetail.pass2FA || loginDetail.use2FA == "0"
                               ? ElevatedButton.icon(
                                   onPressed: () async =>
-                                      await processLogin(loginDetail),
+                                      await processTax(loginDetail),
                                   icon: Icon(Icons.login_sharp),
                                   label: Text('รายงานภาษี'),
                                   style: ElevatedButton.styleFrom(
                                     foregroundColor: Colors.blue.shade900,
                                     // backgroundColor: Colors.lightGreenAccent,
                                     textStyle: GoogleFonts.notoSansThai(
-                                      fontSize: 20,
+                                      fontSize: 15,
                                       // fontWeight: FontWeight.bold
                                     ),
                                     // minimumSize: Size(30, 100),
@@ -811,8 +1009,8 @@ class _MenuState extends State<Menu> {
                   colors: [Colors.blue.shade50, Colors.blue.shade200],
                 ),
               ),
-              margin: EdgeInsets.all(10),
-              padding: EdgeInsets.all(10),
+              margin: EdgeInsets.all(5),
+              padding: EdgeInsets.all(5),
               child: Form(
                 key: formKey,
                 child: Column(
@@ -825,22 +1023,24 @@ class _MenuState extends State<Menu> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           buildImage(loginDetail),
-                          SizedBox(height: 15),
+                          SizedBox(height: 5),
                           buildTextField("year"),
-                          SizedBox(height: 15),
+                          SizedBox(height: 5),
                           buildDropDownMonth(loginDetail),
-                          SizedBox(height: 20),
+                          SizedBox(height: 5),
+                          buildPwdRep(),
+                          SizedBox(height: 5),
                           loginDetail.pass2FA || loginDetail.use2FA == "0"
                               ? ElevatedButton.icon(
                                   onPressed: () async =>
-                                      await processLogin(loginDetail),
+                                      await processSlip(loginDetail),
                                   icon: Icon(Icons.login_sharp),
                                   label: Text('รายงานสลิป'),
                                   style: ElevatedButton.styleFrom(
                                     foregroundColor: Colors.blue.shade900,
                                     // backgroundColor: Colors.lightGreenAccent,
                                     textStyle: GoogleFonts.notoSansThai(
-                                      fontSize: 20,
+                                      fontSize: 15,
                                       // fontWeight: FontWeight.bold
                                     ),
                                     // minimumSize: Size(30, 100),
@@ -888,7 +1088,7 @@ class _MenuState extends State<Menu> {
         //  autofocus: true,
         //  icon: Icon(Icons.share_arrival_time_outlined,textDirection: TextDirection.ltr,) ,
         style: TextStyle(
-          fontSize: 20, //loginDetail.logicalWidth * 0.06 * (1 / 3), //16,
+          fontSize: 15, //loginDetail.logicalWidth * 0.06 * (1 / 3), //16,
           color: Colors.black,
           fontFamily: 'Noto Sans Thai',
         ),
@@ -901,5 +1101,93 @@ class _MenuState extends State<Menu> {
         },
       ),
     );
+  }
+
+  Future<void> processTax(LoginDetail loginDetail) async {
+    String yt = taxYear;
+    String mt = "00";
+    String period = "2";
+    // String pwdType = "none";
+    // String pwd = "";
+    // String accType = "true";
+    String url =
+        "${loginDetail.urlSal}/repYT/${loginDetail.idcard}?yt=$yt&mt=$mt&period=$period&pwdTyep=$pwdType&pwd=$pwd&bkno=$accType";
+    // AlertDialogMsg().showAlertDialog(context, code2FA, url);
+
+    http.Response response = await http.get(
+      Uri.parse(url),
+      headers: <String, String>{
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json;charset=UTF-8',
+        'Accept': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer   ${loginDetail.token}',
+      },
+      // body: jsonEncode(<String, String>{
+      //   "username": userName,
+      //   "password": password,
+      // }),
+    );
+
+    // Map map = json.decode(response.body);
+
+    // print(response.statusCode);
+
+    if (response.statusCode == 200) {
+      url =
+          "${loginDetail.urlSal}/downloadRep/${loginDetail.idcard}?yt=$yt&mt=$mt&period=$period";
+
+      final Uri url0 = Uri.parse(url);
+
+      if (!await launchUrl(url0)) {
+        throw 'Could not launch $url0';
+      }
+    }
+
+    // setState(() {});
+    // return null;
+  }
+
+  Future<void> processSlip(LoginDetail loginDetail) async {
+    String yt = curYear;
+    String mt = curMonth;
+    String period = "2";
+    // String pwdType = "none";
+    // String pwd = "";
+    // String accType = "true";
+    String url =
+        "${loginDetail.urlSal}/repYT/${loginDetail.idcard}?yt=$yt&mt=$mt&period=$period&pwdTyep=$pwdType&pwd=$pwd&bkno=$accType";
+    // AlertDialogMsg().showAlertDialog(context, code2FA, url);
+AlertDialogMsg().showAlertDialog(context, "url", url);
+    http.Response response = await http.get(
+      Uri.parse(url),
+      headers: <String, String>{
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json;charset=UTF-8',
+        'Accept': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer   ${loginDetail.token}',
+      },
+      // body: jsonEncode(<String, String>{
+      //   "username": userName,
+      //   "password": password,
+      // }),
+    );
+
+    // Map map = json.decode(response.body);
+
+    // print(response.statusCode);
+
+    if (response.statusCode == 200) {
+      url =
+          "${loginDetail.urlSal}/downloadRep/${loginDetail.idcard}?yt=$yt&mt=$mt&period=$period";
+
+      final Uri url0 = Uri.parse(url);
+
+      if (!await launchUrl(url0)) {
+        throw 'Could not launch $url0';
+      }
+    }
+
+    // setState(() {});
+    // return null;
   }
 }
