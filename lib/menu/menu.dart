@@ -15,9 +15,9 @@ import 'package:intl/intl.dart';
 // import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_ui/responsive_ui.dart';
-import 'package:sp1/showAlertDialog.dart';
+
 import 'package:url_launcher/url_launcher.dart';
-// import 'package:sp1/showAlertDialog.dart';
+
 import '../dataProvider/loginDetail';
 import '../message.dart';
 
@@ -35,10 +35,12 @@ class _MenuState extends State<Menu> {
   // Check if biometric authentication is available
   int itemIndex = 1;
   bool cursorWait = false;
-  String pwdType = "idcard";
+  String pwdType = "none";
   String pwd = "x";
   bool accType = true;
+  bool register2FA = false;
   final formKey = GlobalKey<FormState>();
+  bool disableAll = false;
   // final _editableKey = GlobalKey<EditableState>();
   // bool _isBiometricAvailable = false;
   // String _authorized = 'Not Authorized';
@@ -195,7 +197,7 @@ class _MenuState extends State<Menu> {
             else
             // return Center(child: CircularProgressIndicator());
             {
-              return visibilityPage(loginDetail);
+              return visibilityPage(loginDetail) ?? SizedBox.shrink();
             }
           },
         ),
@@ -248,6 +250,7 @@ class _MenuState extends State<Menu> {
           ],
           currentIndex: itemIndex,
           onTap: (index) async {
+            if (disableAll) return;
             // manaualView = false;
             switch (index) {
               case 0:
@@ -283,6 +286,7 @@ class _MenuState extends State<Menu> {
   }
 
   void signOut(BuildContext context, LoginDetail loginDetail) {
+    if (disableAll) return;
     Navigator.pushNamed(context, "/");
     loginDetail.idcard = "";
     loginDetail.token = "";
@@ -360,7 +364,7 @@ class _MenuState extends State<Menu> {
     */
   }
 
-  Widget visibilityPage(LoginDetail loginDetail) {
+  Widget? visibilityPage(LoginDetail loginDetail) {
     int choice = 0;
     bool show = false;
 
@@ -397,16 +401,19 @@ class _MenuState extends State<Menu> {
     //   show = true;
     // }
 
-    return Visibility(visible: show, child: selectMethod(choice, loginDetail));
+    return Visibility(
+      visible: show,
+      child: selectMethod(choice, loginDetail) ?? SizedBox.shrink(),
+    );
   }
 
-  Widget selectMethod(int choice, LoginDetail loginDetail) {
+  Widget? selectMethod(int choice, LoginDetail loginDetail) {
     switch (choice) {
       case 1:
         return loginDetail.use2FA == "1"
             ? login(loginDetail)
             : loginDetail.use2FA == "0"
-            ? Text("")
+            ? register(loginDetail)
             : Text("");
       //register(loginDetail);
       case 2:
@@ -775,7 +782,7 @@ class _MenuState extends State<Menu> {
     );
   }
 
-  Container buildImage(LoginDetail loginDetail) {
+  Widget buildImage(LoginDetail loginDetail) {
     return Container(
       padding: EdgeInsets.all(5),
       margin: EdgeInsets.symmetric(vertical: 5),
@@ -830,6 +837,67 @@ class _MenuState extends State<Menu> {
                     ),
                   ],
                 ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<Widget> buildQrCode(LoginDetail loginDetail) async {
+    String url =
+        "${loginDetail.urlSal}/setup-2fa?username=${loginDetail.userName}";
+    http.Response response = await http.get(
+      Uri.parse(url),
+      headers: <String, String>{
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json;charset=UTF-8',
+        'Accept': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer   ${loginDetail.token}',
+      },
+      // body: jsonEncode(<String, String>{
+      //   "username": userName,
+      //   "password": password,
+      // }),
+    );
+
+    // Map map = json.decode(response.body);
+
+    // print(response.statusCode);
+
+    if (response.statusCode == 200) {
+    } else {
+      Message().showMsg(
+        "ไม่สามารถสร้าง QR Code ได้!!!",
+        TypeMsg.warning,
+        context,
+      );
+      return Text("");
+    }
+
+    url =
+        "${loginDetail.urlSal}/downloadRep/${loginDetail.idcard}?yt=88&mt=88&period=qr";
+    return Container(
+      padding: EdgeInsets.all(5),
+      margin: EdgeInsets.symmetric(vertical: 5),
+      // decoration: BoxDecoration(
+      //     color: Colors.yellow[50], borderRadius: BorderRadius.circular(16)),
+      child: Responsive(
+        children: <Widget>[
+          Div(
+            divison: const Division(colS: 12, colM: 12, colL: 12),
+            child: Column(
+              children: <Widget>[
+                // Text("สแกน QR Code ด้วยแอป Google Authenticator",
+                //     style: TextStyle(
+                //       fontSize: 15,
+                //       fontFamily: 'Noto Sans Thai',
+                //       color: Colors.black,
+                //     )),
+                SizedBox(height: 5),
+
+                Image.network(url, fit: BoxFit.cover, height: 300, width: 300),
               ],
             ),
           ),
@@ -915,6 +983,111 @@ class _MenuState extends State<Menu> {
     );
   }
 
+  Widget register(LoginDetail loginDetail) {
+    disableAll = true;
+    return ListView(
+      scrollDirection: Axis.vertical,
+      children: <Widget>[
+        Container(
+          color: Colors.white,
+          child: Center(
+            child: Container(
+              width: 800,
+              constraints: BoxConstraints(
+                maxWidth: double.infinity,
+                minWidth: 450.0,
+              ),
+              // width: 450.0,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  colors: [Colors.blue.shade50, Colors.blue.shade200],
+                ),
+              ),
+              margin: EdgeInsets.all(10),
+              padding: EdgeInsets.all(10),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  //Image.file(image)
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          buildImage(loginDetail),
+                          SizedBox(height: 5),
+                          FutureBuilder<Widget>(
+                            future: buildQrCode(loginDetail),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              } else if (snapshot.hasError) {
+                                return Text("ERROR: ${snapshot.error}");
+                              } else {
+                                return snapshot.data ?? Text("");
+                              }
+                            },
+                          ),
+                          // Text('Available biometrics: ${_availableBiometrics.join(', ')}'),
+                          SizedBox(height: 5),
+                          Text(
+                            "นำมือถือมาสแกน qrcode ด้วยแอป Google Authenticator เสร็จแล้วกดปุ่มลงทะเบียน",
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontFamily: 'Noto Sans Thai',
+                              color: Colors.black,
+                            ),
+                          ),
+                          SizedBox(height: 5),
+                          register2FA
+                              ? Text("")
+                              : ElevatedButton.icon(
+                                  onPressed:
+                                      // _isBiometricAvailable ? _authenticate : null,
+                                      () async {
+                                        disableAll = false;
+                                        register2FA = true;
+                                       await update2FA(loginDetail);
+                                        signOut(context, loginDetail);
+
+                                        // setState(() {});
+                                      },
+                                  icon: Icon(Icons.app_registration_rounded),
+                                  label: Text('ลงทะเบียน'),
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.blue.shade900,
+                                    // backgroundColor: Colors.lightGreenAccent,
+                                    textStyle: GoogleFonts.notoSansThai(
+                                      fontSize: 15,
+                                      // fontWeight: FontWeight.bold
+                                    ),
+                                    // minimumSize: Size(30, 100),
+                                    // maximumSize: "25",
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 30,
+                                      vertical: 15,
+                                    ),
+                                  ),
+                                ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget repTax(LoginDetail loginDetail) {
     return ListView(
       scrollDirection: Axis.vertical,
@@ -952,7 +1125,7 @@ class _MenuState extends State<Menu> {
                           SizedBox(height: 5),
                           buildTextField("year"),
                           SizedBox(height: 5),
-                          buildPwdRep(),
+                          // buildPwdRep(),
                           SizedBox(height: 5),
                           loginDetail.pass2FA || loginDetail.use2FA == "0"
                               ? ElevatedButton.icon(
@@ -1028,7 +1201,7 @@ class _MenuState extends State<Menu> {
                           SizedBox(height: 5),
                           buildDropDownMonth(loginDetail),
                           SizedBox(height: 5),
-                          buildPwdRep(),
+                          // buildPwdRep(),
                           SizedBox(height: 5),
                           loginDetail.pass2FA || loginDetail.use2FA == "0"
                               ? ElevatedButton.icon(
@@ -1110,8 +1283,9 @@ class _MenuState extends State<Menu> {
     // String pwdType = "none";
     // String pwd = "";
     // String accType = "true";
+    String bkno = accType ? "true" : "false";
     String url =
-        "${loginDetail.urlSal}/repYT/${loginDetail.idcard}?yt=$yt&mt=$mt&period=$period&pwdTyep=$pwdType&pwd=$pwd&bkno=$accType";
+        "${loginDetail.urlSal}/repYT/${loginDetail.idcard}?yt=$yt&mt=$mt&period=$period&pwdTyep=$pwdType&pwd=$pwd&bkno=$bkno";
     // AlertDialogMsg().showAlertDialog(context, code2FA, url);
 
     http.Response response = await http.get(
@@ -1154,10 +1328,11 @@ class _MenuState extends State<Menu> {
     // String pwdType = "none";
     // String pwd = "";
     // String accType = "true";
+    String bkno = accType ? "true" : "false";
     String url =
-        "${loginDetail.urlSal}/repYT/${loginDetail.idcard}?yt=$yt&mt=$mt&period=$period&pwdTyep=$pwdType&pwd=$pwd&bkno=$accType";
+        "${loginDetail.urlSal}/repYT/${loginDetail.idcard}?yt=$yt&mt=$mt&period=$period&pwdTyep=$pwdType&pwd=$pwd&bkno=$bkno";
     // AlertDialogMsg().showAlertDialog(context, code2FA, url);
-AlertDialogMsg().showAlertDialog(context, "url", url);
+    // AlertDialogMsg().showAlertDialog(context, "url", url);
     http.Response response = await http.get(
       Uri.parse(url),
       headers: <String, String>{
@@ -1190,4 +1365,35 @@ AlertDialogMsg().showAlertDialog(context, "url", url);
     // setState(() {});
     // return null;
   }
+
+  Future<void> update2FA(LoginDetail loginDetail) async {
+    String url =
+        "${loginDetail.urlSal}/update-2fa?idcard=${loginDetail.idcard}";
+    http.Response response = await http.put(
+      Uri.parse(url),
+      headers: <String, String>{
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json;charset=UTF-8',
+        'Accept': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer   ${loginDetail.token}',
+      },
+      // body: jsonEncode(<String, String>{
+      //   "username": userName,
+      //   "password": password,
+      // }),
+    );
+
+    // Map map = json.decode(response.body);
+    if (response.statusCode == 200) {
+    } else {
+      Message().showMsg(
+        "ไม่สามารถ update 2FA ได้!!!",
+        TypeMsg.warning,
+        context,
+      );
+    }
+  }
+
+
+
 }
