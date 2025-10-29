@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 
 // import 'dart:io';
 
@@ -846,6 +846,9 @@ class _MenuState extends State<Menu> {
   }
 
   Future<Widget> buildQrCode(LoginDetail loginDetail) async {
+    if (loginDetail.idcard == "") {
+      return Text("");
+    }
     String url =
         "${loginDetail.urlSal}/setup-2fa?username=${loginDetail.userName}";
     http.Response response = await http.get(
@@ -1020,7 +1023,7 @@ class _MenuState extends State<Menu> {
                           buildImage(loginDetail),
                           SizedBox(height: 5),
                           FutureBuilder<Widget>(
-                            future: buildQrCode(loginDetail),
+                            future:  buildQrCode(loginDetail),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
@@ -1045,36 +1048,68 @@ class _MenuState extends State<Menu> {
                             ),
                           ),
                           SizedBox(height: 5),
-                          register2FA
-                              ? Text("")
-                              : ElevatedButton.icon(
-                                  onPressed:
-                                      // _isBiometricAvailable ? _authenticate : null,
-                                      () async {
-                                        disableAll = false;
-                                        register2FA = true;
-                                       await update2FA(loginDetail);
-                                        signOut(context, loginDetail);
 
-                                        // setState(() {});
-                                      },
-                                  icon: Icon(Icons.app_registration_rounded),
-                                  label: Text('ลงทะเบียน'),
-                                  style: ElevatedButton.styleFrom(
-                                    foregroundColor: Colors.blue.shade900,
-                                    // backgroundColor: Colors.lightGreenAccent,
-                                    textStyle: GoogleFonts.notoSansThai(
-                                      fontSize: 15,
-                                      // fontWeight: FontWeight.bold
+                          Row(
+                            children: [
+                              register2FA
+                                  ? Text("")
+                                  : ElevatedButton.icon(
+                                      onPressed:                                          
+                                          () async {
+                                            disableAll = false;
+                                            register2FA = true;
+                                           await update2FA(loginDetail);
+                                            signOut(context, loginDetail);
+                              
+                                            // setState(() {});
+                                          },
+                                      icon: Icon(Icons.app_registration_rounded),
+                                      label: Text('ลงทะเบียน'),
+                                      style: ElevatedButton.styleFrom(
+                                        foregroundColor: Colors.blue.shade900,
+                                        // backgroundColor: Colors.lightGreenAccent,
+                                        textStyle: GoogleFonts.notoSansThai(
+                                          fontSize: 15,
+                                          // fontWeight: FontWeight.bold
+                                        ),
+                                        // minimumSize: Size(30, 100),
+                                        // maximumSize: "25",
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 30,
+                                          vertical: 15,
+                                        ),
+                                      ),
                                     ),
-                                    // minimumSize: Size(30, 100),
-                                    // maximumSize: "25",
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 30,
-                                      vertical: 15,
-                                    ),
+                            SizedBox(width: 5),
+                              ElevatedButton.icon(
+                                onPressed:
+                                    // _isBiometricAvailable ? _authenticate : null,
+                                    () async {
+                                      disableAll = false;
+                                      signOut(context, loginDetail);
+                                      // setState(() {});
+                                    },
+                                icon: Icon(Icons.exit_to_app),
+                                label: Text('ยกเลิก'),
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.blue.shade900,
+                                  // backgroundColor: Colors.lightGreenAccent,
+                                  textStyle: GoogleFonts.notoSansThai(
+                                    fontSize: 15,
+                                    // fontWeight: FontWeight.bold
+                                  ),
+                                  // minimumSize: Size(30, 100),
+                                  // maximumSize: "25",
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 30,
+                                    vertical: 15,
                                   ),
                                 ),
+                              ),
+                            ],
+                          ),
+                                
+                               
                         ],
                       ),
                     ),
@@ -1369,7 +1404,7 @@ class _MenuState extends State<Menu> {
   Future<void> update2FA(LoginDetail loginDetail) async {
     String url =
         "${loginDetail.urlSal}/update-2fa?idcard=${loginDetail.idcard}";
-    http.Response response = await http.put(
+    http.Response response = await http.get(
       Uri.parse(url),
       headers: <String, String>{
         'Access-Control-Allow-Origin': '*',
