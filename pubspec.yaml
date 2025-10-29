@@ -91,6 +91,8 @@ flutter:
   assets:
     - assets/images/      
     - google_fonts/
+  
+  
   fonts:
     - family: Noto Sans Thai
       fonts:
