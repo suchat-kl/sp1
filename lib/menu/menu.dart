@@ -41,6 +41,8 @@ class _MenuState extends State<Menu> {
   bool register2FA = false;
   final formKey = GlobalKey<FormState>();
   bool disableAll = false;
+  
+
   // final _editableKey = GlobalKey<EditableState>();
   // bool _isBiometricAvailable = false;
   // String _authorized = 'Not Authorized';
@@ -1023,7 +1025,7 @@ class _MenuState extends State<Menu> {
                           buildImage(loginDetail),
                           SizedBox(height: 5),
                           FutureBuilder<Widget>(
-                            future:  buildQrCode(loginDetail),
+                            future: buildQrCode(loginDetail),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
@@ -1054,16 +1056,17 @@ class _MenuState extends State<Menu> {
                               register2FA
                                   ? Text("")
                                   : ElevatedButton.icon(
-                                      onPressed:                                          
-                                          () async {
-                                            disableAll = false;
-                                            register2FA = true;
-                                           await update2FA(loginDetail);
-                                            signOut(context, loginDetail);
-                              
-                                            // setState(() {});
-                                          },
-                                      icon: Icon(Icons.app_registration_rounded),
+                                      onPressed: () async {
+                                        disableAll = false;
+                                        register2FA = true;
+                                        await update2FA(loginDetail);
+                                        signOut(context, loginDetail);
+
+                                        // setState(() {});
+                                      },
+                                      icon: Icon(
+                                        Icons.app_registration_rounded,
+                                      ),
                                       label: Text('ลงทะเบียน'),
                                       style: ElevatedButton.styleFrom(
                                         foregroundColor: Colors.blue.shade900,
@@ -1080,7 +1083,7 @@ class _MenuState extends State<Menu> {
                                         ),
                                       ),
                                     ),
-                            SizedBox(width: 5),
+                              SizedBox(width: 5),
                               ElevatedButton.icon(
                                 onPressed:
                                     // _isBiometricAvailable ? _authenticate : null,
@@ -1108,8 +1111,6 @@ class _MenuState extends State<Menu> {
                               ),
                             ],
                           ),
-                                
-                               
                         ],
                       ),
                     ),
@@ -1428,7 +1429,4 @@ class _MenuState extends State<Menu> {
       );
     }
   }
-
-
-
 }

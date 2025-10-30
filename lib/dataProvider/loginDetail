@@ -5,6 +5,7 @@ class LoginDetail{
     String deptName="";
     String token="";
     String userName="";
+   
     String month="",year="";
     String dept="";
     String div="";

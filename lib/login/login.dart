@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:core' as debug;
 import 'dart:core';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -38,7 +39,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
   String password = '';
   bool cursorWait = false;
   String alertMsg = "";
-
+bool savePwd = true;
   // String urlSal = "https://dbdoh.doh.go.th/saldoh"; //:9000";
   // late FToast fToast;
   _MyLoginPageState() {
@@ -104,6 +105,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
                               buildTextFieldPassword(),
                               // buildButtonSignIn(loginDetail),
                               buildOptionRow(loginDetail),
+                              buildChkBox(),
                               buildMsg(loginDetail),
                             ],
                           ),
@@ -119,7 +121,45 @@ class _MyLoginPageState extends State<MyLoginPage> {
       ),
     );
   }
+Widget buildChkBox(){
+  return Container(
+      padding: EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        // color: Colors.yellow[50],
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Responsive(
+        children: <Widget>[
+          Div(
+                  divison: const Division(colS: 12, colM: 12, colL: 12),
+                  child: Expanded(
+                    child: CheckboxListTile(
+                      activeColor: Colors.blue.shade400,
+                      title: Text(
+                        "จำชื่อและรหัสผ่าน",
+                        style: GoogleFonts.notoSansThai(
+                          fontSize: 20,
+                          color: Colors.black,
+                        ),
+                      ),
+                      value: savePwd,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          savePwd = value!;
+                        });
+                      },
+                      controlAffinity:
+                          ListTileControlAffinity.leading, // checkbox at start
+                    ),
+                  ),
+                ),
 
+
+
+        ],
+      ),
+    );
+}
   //  late Widget toast;
   // ignore: unused_element
   // _showToast() {
@@ -398,8 +438,15 @@ class _MyLoginPageState extends State<MyLoginPage> {
             loginDetail.year2Period = "";
           }
 
-          loginDetail.lastLoginMsg = await getLastLogin(loginDetail.idcard,loginDetail);
-          insertLastLogin(loginDetail.idcard, "sp",loginDetail); //not need to use await
+          loginDetail.lastLoginMsg = await getLastLogin(
+            loginDetail.idcard,
+            loginDetail,
+          );
+          insertLastLogin(
+            loginDetail.idcard,
+            "sp",
+            loginDetail,
+          ); //not need to use await
           loginDetail.firstChk2FA = true;
           loginDetail.pass2FA = false;
           // Message().showMsg(
@@ -494,7 +541,29 @@ class _MyLoginPageState extends State<MyLoginPage> {
     );
   }
 
-  Future<String> getLastLogin(String idcard,LoginDetail loginDetail) async {
+  final storage = FlutterSecureStorage();
+  String? secUsr = "";
+  String? secPwd = "";
+  String secType = "";
+  Future<void> secureStorage() async {
+    if (secType == "w") {
+      // Store credentials
+      await storage.write(key: 'username', value: secUsr);
+      await storage.write(key: 'password', value: secPwd);
+    } else if (secType == "r") {
+      // Read credentials
+      // ignore: unused_local_variable
+      String? secUsr = (await storage.read(key: 'username'));
+      // ignore: unused_local_variable
+      String? secPwd = await storage.read(key: 'password');
+    } else if (secType == "d") {
+      // Delete credentials
+      await storage.delete(key: 'username');
+      await storage.delete(key: 'password');
+    }
+  }
+
+  Future<String> getLastLogin(String idcard, LoginDetail loginDetail) async {
     String url = "${loginDetail.urlSal}/findLastLogin?idcard=$idcard";
     // print(url);
     http.Response response = await http.post(
@@ -516,7 +585,11 @@ class _MyLoginPageState extends State<MyLoginPage> {
     return "";
   }
 
-  Future<void> insertLastLogin(String idcard, String app,LoginDetail loginDetail) async {
+  Future<void> insertLastLogin(
+    String idcard,
+    String app,
+    LoginDetail loginDetail,
+  ) async {
     String type = "M";
     // DateTime datetime = DateTime.now();
     // String last = datetime.toString();
