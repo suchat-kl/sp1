@@ -19,6 +19,7 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:responsive_ui/responsive_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:encrypt/encrypt.dart' as encrypt;
 // import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 // import 'package:fluttertoast/fluttertoast.dart';
 // import 'package:fluttertoast_example/toast_context.dart';
@@ -39,7 +40,11 @@ class _MyLoginPageState extends State<MyLoginPage> {
   String password = '';
   bool cursorWait = false;
   String alertMsg = "";
-bool savePwd = true;
+  bool savePwd = true;
+  final storage = const FlutterSecureStorage();
+  String? secUsr = "";
+  String? secPwd = "";
+  String secType = "";
   // String urlSal = "https://dbdoh.doh.go.th/saldoh"; //:9000";
   // late FToast fToast;
   _MyLoginPageState() {
@@ -54,8 +59,25 @@ bool savePwd = true;
     super.initState();
     // fToast = FToast();
     // fToast.init(context);
+    // _initAsync();
   }
-
+/*
+  Future<void> _initAsync() async {
+    if (savePwd) {
+      secType = "r";
+      await secureStorage();
+      userName = decryptData(secUsr);
+      password = decryptData(secPwd);
+      if (kDebugMode){
+        debug.print("Secure Storage:");
+        debug.print("Username: $userName");
+        debug.print("Password: $password");
+        debug.print("Secure Storage:");
+      }
+      // if (mounted) setState(() {});
+    }
+  }
+*/
   // late var theme;
   @override
   Widget build(BuildContext context) {
@@ -105,7 +127,7 @@ bool savePwd = true;
                               buildTextFieldPassword(),
                               // buildButtonSignIn(loginDetail),
                               buildOptionRow(loginDetail),
-                              buildChkBox(),
+                              // buildChkBox(),
                               buildMsg(loginDetail),
                             ],
                           ),
@@ -121,8 +143,9 @@ bool savePwd = true;
       ),
     );
   }
-Widget buildChkBox(){
-  return Container(
+
+  Widget buildChkBox() {
+    return Container(
       padding: EdgeInsets.all(5),
       decoration: BoxDecoration(
         // color: Colors.yellow[50],
@@ -131,35 +154,32 @@ Widget buildChkBox(){
       child: Responsive(
         children: <Widget>[
           Div(
-                  divison: const Division(colS: 12, colM: 12, colL: 12),
-                  child: Expanded(
-                    child: CheckboxListTile(
-                      activeColor: Colors.blue.shade400,
-                      title: Text(
-                        "จำชื่อและรหัสผ่าน",
-                        style: GoogleFonts.notoSansThai(
-                          fontSize: 20,
-                          color: Colors.black,
-                        ),
-                      ),
-                      value: savePwd,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          savePwd = value!;
-                        });
-                      },
-                      controlAffinity:
-                          ListTileControlAffinity.leading, // checkbox at start
-                    ),
+            divison: const Division(colS: 12, colM: 12, colL: 12),
+            child: Expanded(
+              child: CheckboxListTile(
+                activeColor: Colors.blue.shade400,
+                title: Text(
+                  "จำชื่อและรหัสผ่าน",
+                  style: GoogleFonts.notoSansThai(
+                    fontSize: 20,
+                    color: Colors.black,
                   ),
                 ),
-
-
-
+                value: savePwd,
+                onChanged: (bool? value) {
+                  setState(() {
+                    savePwd = value!;
+                  });
+                },
+                controlAffinity:
+                    ListTileControlAffinity.leading, // checkbox at start
+              ),
+            ),
+          ),
         ],
       ),
     );
-}
+  }
   //  late Widget toast;
   // ignore: unused_element
   // _showToast() {
@@ -337,7 +357,22 @@ Widget buildChkBox(){
     }
     // print("msg= " + msg.username);
     return true;
+   
   }
+
+   // TODO: Replace this with a secure 16/24/32-byte key stored safely (do not hardcode in production).
+   final encrypt.Key key = encrypt.Key.fromUtf8('0123456789ABCDEF0123456789ABCDEF');
+    final encrypt.IV iv = encrypt.IV.fromLength(16);
+    late final encrypt.Encrypter encrypter = encrypt.Encrypter(encrypt.AES(key));
+    String encryptData(String? encryptedText) {
+   
+      if (encryptedText == null || encryptedText.isEmpty) return "";
+      return encrypter.encrypt(encryptedText, iv: iv).base64;
+    }
+    String decryptData(String? encryptedText) {
+      if (encryptedText == null || encryptedText.isEmpty) return "";
+      return encrypter.decrypt64(encryptedText, iv: iv);
+    }
 
   Widget buildButtonSignIn(LoginDetail loginDetail) {
     return InkWell(
@@ -449,6 +484,16 @@ Widget buildChkBox(){
           ); //not need to use await
           loginDetail.firstChk2FA = true;
           loginDetail.pass2FA = false;
+
+          if (savePwd) {
+            secUsr = encryptData(userName) ;
+            secPwd = encryptData(password);
+            secType = "w";
+            await secureStorage();
+          } else {
+            secType = "d";
+            await secureStorage();
+          }
           // Message().showMsg(
           //             "ยินดีต้อนรับ ${loginDetail.userName} เข้าสู่ระบบ",
           //             TypeMsg.information,
@@ -541,27 +586,30 @@ Widget buildChkBox(){
     );
   }
 
-  final storage = FlutterSecureStorage();
-  String? secUsr = "";
-  String? secPwd = "";
-  String secType = "";
   Future<void> secureStorage() async {
     if (secType == "w") {
       // Store credentials
       await storage.write(key: 'username', value: secUsr);
       await storage.write(key: 'password', value: secPwd);
+      await storage.write(key: 'savePwd', value: savePwd.toString());
     } else if (secType == "r") {
       // Read credentials
-      // ignore: unused_local_variable
-      String? secUsr = (await storage.read(key: 'username'));
-      // ignore: unused_local_variable
-      String? secPwd = await storage.read(key: 'password');
+      secUsr = await storage.read(key: 'username');
+      secPwd = await storage.read(key: 'password');
+      String? savePwdStr = await storage.read(key: 'savePwd');
+      if (savePwdStr != null && savePwdStr.toLowerCase() == 'true') {
+        savePwd = true;
+      } else {
+        savePwd = false;
+      }
     } else if (secType == "d") {
       // Delete credentials
       await storage.delete(key: 'username');
       await storage.delete(key: 'password');
+      await storage.delete(key: 'savePwd');
     }
   }
+     
 
   Future<String> getLastLogin(String idcard, LoginDetail loginDetail) async {
     String url = "${loginDetail.urlSal}/findLastLogin?idcard=$idcard";
@@ -634,6 +682,7 @@ Widget buildChkBox(){
             divison: const Division(colS: 12, colM: 12, colL: 12),
             child: TextFormField(
               // onTap: ()=>{colors.},
+              initialValue: userName,
               decoration: InputDecoration(
                 labelText: "ชื่อผู้ใช้งาน",
                 hintText: "ชื่อผู้ใช้งาน",
@@ -647,7 +696,7 @@ Widget buildChkBox(){
               // validator: (value) => value.toString().length != 3
               //     ? 'ชื่อผู้ใช้งานไม่ถูกต้อง'
               //     : null,
-              onSaved: (value) => userName = value.toString(),
+              onChanged: (value) => userName = value.toString(),
               keyboardType: TextInputType.text,
             ),
           ),
@@ -669,9 +718,10 @@ Widget buildChkBox(){
           Div(
             divison: const Division(colS: 12, colM: 12, colL: 12),
             child: TextFormField(
+              initialValue: password,
               validator: (value) =>
                   value.toString().isNotEmpty ? null : "ต้องบันทึกรหัสผ่าน",
-              onSaved: (value) => password = value.toString(),
+              onChanged: (value) => password = value.toString(),
               keyboardType: TextInputType.text,
               obscureText: true,
               decoration: InputDecoration(

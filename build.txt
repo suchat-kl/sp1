@@ -16,3 +16,4 @@ flutter pub run flutter_launcher_icons:main  //icon app
 flutter pub get upgrade
 flutter upgrade
 flutter doctor
+git pull https://github.com/suchat-kl/sp1.git
