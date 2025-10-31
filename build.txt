@@ -1,3 +1,26 @@
+Open a terminal at your project root.
+
+Run Gradle clean (for Android only):
+
+text
+cd android
+./gradlew clean
+cd ..
+Run Flutter clean (for Flutter projects):
+
+text
+flutter clean
+Rebuild your project:
+
+For Flutter:
+
+text
+flutter pub get
+flutter build apk
+For Android (manual build):
+
+text
+
 flutter build web
 directory build/web
 

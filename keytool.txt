@@ -1,0 +1,38 @@
+PS D:\flutterPrj\sp1\android\app\key> keytool -genkey -v -keystore D:\flutterPrj\sp1\android\app\key\key.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias slipTaxDOH
+Enter keystore password:
+
+Re-enter new password:
+
+What is your first and last name?
+  [Unknown]:  suchat klamphimai
+What is the name of your organizational unit?
+  [Unknown]:  doh
+What is the name of your organization?
+  [Unknown]:  department of highways
+What is the name of your City or Locality?
+  [Unknown]:  bangkok
+What is the name of your State or Province?
+  [Unknown]:  bangkok
+What is the two-letter country code for this unit?
+  [Unknown]:  th
+Is CN=suchat klamphimai, OU=doh, O=department of highways, L=bangkok, ST=bangkok, C=th correct?
+  [no]:  yes
+
+Generating 2,048 bit RSA key pair and self-signed certificate (SHA256withRSA) with a validity of 10,000 days
+        for: CN=suchat klamphimai, OU=doh, O=department of highways, L=bangkok, ST=bangkok, C=th
+Enter key password for <slipTaxDOH>
+        (RETURN if same as keystore password):
+
+[Storing D:\flutterPrj\sp1\android\app\key\key.jks]
+
+Warning:
+The JKS keystore uses a proprietary format. It is recommended to migrate to PKCS12 which is an industry standard format using "keytool -importkeystore -srckeystore D:\flutterPrj\sp1\android\app\key\key.jks -destkeystore D:\flutterPrj\sp1\android\app\key\key.jks -deststoretype pkcs12".
+PS D:\flutterPrj\sp1\android\app\key> keytool -importkeystore -srckeystore D:\flutterPrj\sp1\android\app\key\key.jks -destkeystore D:\flutterPrj\sp1\android\app\key\key.jks -deststoretype pkcs12
+Enter source keystore password:
+
+Entry for alias sliptaxdoh successfully imported.
+Import command completed:  1 entries successfully imported, 0 entries failed or cancelled
+
+Warning:
+Migrated "D:\flutterPrj\sp1\android\app\key\key.jks" to PKCS12. The JKS keystore is backed up as "D:\flutterPrj\sp1\android\app\key\key.jks.old".
+PS D:\flutterPrj\sp1\android\app\key> dir

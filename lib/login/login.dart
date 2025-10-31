@@ -3,7 +3,7 @@
 import 'dart:convert';
 import 'dart:core' as debug;
 import 'dart:core';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+// import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,7 +19,7 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:responsive_ui/responsive_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:encrypt/encrypt.dart' as encrypt;
+// import 'package:encrypt/encrypt.dart' as encrypt;
 // import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 // import 'package:fluttertoast/fluttertoast.dart';
 // import 'package:fluttertoast_example/toast_context.dart';
@@ -41,10 +41,10 @@ class _MyLoginPageState extends State<MyLoginPage> {
   bool cursorWait = false;
   String alertMsg = "";
   bool savePwd = true;
-  final storage = const FlutterSecureStorage();
-  String? secUsr = "";
-  String? secPwd = "";
-  String secType = "";
+  // final storage = const FlutterSecureStorage();
+  // String? secUsr = "";
+  // String? secPwd = "";
+  // String secType = "";
   // String urlSal = "https://dbdoh.doh.go.th/saldoh"; //:9000";
   // late FToast fToast;
   _MyLoginPageState() {
@@ -359,8 +359,8 @@ class _MyLoginPageState extends State<MyLoginPage> {
     return true;
    
   }
-
-   // TODO: Replace this with a secure 16/24/32-byte key stored safely (do not hardcode in production).
+/*
+    
    final encrypt.Key key = encrypt.Key.fromUtf8('0123456789ABCDEF0123456789ABCDEF');
     final encrypt.IV iv = encrypt.IV.fromLength(16);
     late final encrypt.Encrypter encrypter = encrypt.Encrypter(encrypt.AES(key));
@@ -373,7 +373,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
       if (encryptedText == null || encryptedText.isEmpty) return "";
       return encrypter.decrypt64(encryptedText, iv: iv);
     }
-
+*/
   Widget buildButtonSignIn(LoginDetail loginDetail) {
     return InkWell(
       onTap: () async {
@@ -485,15 +485,16 @@ class _MyLoginPageState extends State<MyLoginPage> {
           loginDetail.firstChk2FA = true;
           loginDetail.pass2FA = false;
 
-          if (savePwd) {
-            secUsr = encryptData(userName) ;
-            secPwd = encryptData(password);
-            secType = "w";
-            await secureStorage();
-          } else {
-            secType = "d";
-            await secureStorage();
-          }
+          // if (savePwd) {
+          //   secUsr = encryptData(userName) ;
+          //   secPwd = encryptData(password);
+          //   secType = "w";
+          //   await secureStorage();
+          // } else {
+          //   secType = "d";
+          //   await secureStorage();
+          // }
+
           // Message().showMsg(
           //             "ยินดีต้อนรับ ${loginDetail.userName} เข้าสู่ระบบ",
           //             TypeMsg.information,
@@ -585,7 +586,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
       ),
     );
   }
-
+/*
   Future<void> secureStorage() async {
     if (secType == "w") {
       // Store credentials
@@ -597,7 +598,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
       secUsr = await storage.read(key: 'username');
       secPwd = await storage.read(key: 'password');
       String? savePwdStr = await storage.read(key: 'savePwd');
-      if (savePwdStr != null && savePwdStr.toLowerCase() == 'true') {
+      if (savePwdStr.toLowerCase() == 'true') {
         savePwd = true;
       } else {
         savePwd = false;
@@ -609,7 +610,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
       await storage.delete(key: 'savePwd');
     }
   }
-     
+  */
 
   Future<String> getLastLogin(String idcard, LoginDetail loginDetail) async {
     String url = "${loginDetail.urlSal}/findLastLogin?idcard=$idcard";
