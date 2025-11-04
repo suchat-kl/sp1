@@ -33,6 +33,7 @@ flutter pub get
 
 flutter clean
 flutter run
+flutter run --release
 
 flutter pub run flutter_launcher_icons:main  //icon app
  dart  run flutter_launcher_icons

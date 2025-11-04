@@ -61,7 +61,8 @@ class _MyLoginPageState extends State<MyLoginPage> {
     // fToast.init(context);
     // _initAsync();
   }
-/*
+
+  /*
   Future<void> _initAsync() async {
     if (savePwd) {
       secType = "r";
@@ -233,120 +234,17 @@ class _MyLoginPageState extends State<MyLoginPage> {
         "password": password,
       }),
     );
-    // if (!mounted) return false;
-    // Message().showMsg(
-    //         "ยินดีต้อนรับ $userName เข้าสู่ระบบ",
-    //         TypeMsg.information,
-    //         context,
-    //       );
-    // int code = response.statusCode;
-    // Message().showMsg(
-    //   code.toString(),
-    //   TypeMsg.information,
-    //   context,
-    // );
+   
 
     Map map = json.decode(response.body);
 
     // print(response.statusCode);
-
+    
     if (response.statusCode == 200) {
       loginDetail.token = map["accessToken"];
       loginDetail.passLogin = true;
-
-      // this.passLogin=true;
-      //'Authorization': 'Bearer $token',
-      // msg = Login.fromJson(map);
-      //  msg.deptName=     map["deptName"];
-      //  msg.username=map["username"];
-      //  msg.div=map["div"];
-      //  msg.roles=map["role"];
     } else {
-      //  Navigator.of(context).push(MaterialPageRoute(
-      //   builder: (context) => ToastContext(),
-      // ));
-      // Fluttertoast.showToast(
-      //   msg: "ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง",
-      //   toastLength: Toast.LENGTH_LONG,
-      //   timeInSecForIosWeb: 1,
-      //   gravity: ToastGravity.CENTER,
-      //   backgroundColor: Colors.red.shade100,
-      //   textColor: Colors.white,
-      //   fontSize: 30.0,
-      // );
-      // Message().showMsg(
-      //     "ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง", TypeMsg.Warning, context);
-      /*
-      Flushbar(
-        titleText: Text("ระบบหักหนี้",
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15.0,
-                color: Colors.yellow.shade600)),
-        // titleColor: Colors.white,
-        flushbarPosition: FlushbarPosition.TOP,
-        flushbarStyle: FlushbarStyle.FLOATING,
-        showProgressIndicator: true,
-        progressIndicatorBackgroundColor: Colors.blueGrey,
-        icon: Icon(
-          Icons.warning_rounded,
-          color: Colors.greenAccent,
-        ),
-        messageText: Text(
-          "ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง",
-          style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18.0,
-              color: Colors.yellow.shade600),
-        ),
-        duration: Duration(seconds: 3),
-        // reverseAnimationCurve: Curves.decelerate,
-        // forwardAnimationCurve: Curves.elasticOut,
-        //  boxShadows: [
-        //   BoxShadow(
-        //       color: Colors.blue.shade800,
-        //       offset: Offset(0.0, 2.0),
-        //       blurRadius: 3.0)
-        // ],
-        // backgroundGradient:
-        //     LinearGradient(colors: [Colors.blueGrey, Colors.black]),
-        isDismissible: false,
-        // backgroundColor: Colors.green.shade100,
-        // messageSize: 16,
-        // messageColor: Colors.red,
-      )..show(context);
-*/
-      // Custom Toast Position
-      // fToast.showToast(
-      //     child: toast,
-      //     toastDuration: Duration(seconds: 30),
-      //     positionedToastBuilder: (context, child) {
-      //       return Positioned(
-      //         child: child,
-      //         top: 160.0,
-      //         left: 160.0,
-      //       );
-      //     });
-      // showAnimatedDialog(
-      //   context: context,
-      //   barrierDismissible: true,
-      //   builder: (BuildContext context) {
-      //     return ClassicGeneralDialogWidget(
-      //       titleText: 'ระบบหักหนี้',
-      //       contentText: 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง',
-      //       onPositiveClick: () {
-      //         Navigator.of(context).pop();
-      //       },
-      //       onNegativeClick: () {
-      //         Navigator.of(context).pop();
-      //       },
-      //     );
-      //   },
-      //   animationType: DialogTransitionType.fadeScale,
-      //   curve: Curves.fastOutSlowIn,
-      //   duration: Duration(seconds: 1),
-      // );
-      // throw Exception('Failed to ');
+      loginDetail.passLogin = false;
       Message().showMsg(
         "${response.statusCode} error  ==> ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง",
         TypeMsg.warning,
@@ -357,9 +255,9 @@ class _MyLoginPageState extends State<MyLoginPage> {
     }
     // print("msg= " + msg.username);
     return true;
-   
   }
-/*
+
+  /*
     
    final encrypt.Key key = encrypt.Key.fromUtf8('0123456789ABCDEF0123456789ABCDEF');
     final encrypt.IV iv = encrypt.IV.fromLength(16);
@@ -389,7 +287,12 @@ class _MyLoginPageState extends State<MyLoginPage> {
             loginDetail,
           );
 
-          if (!loginDetail.passLogin) return;
+          if (!loginDetail.passLogin) {
+            // ScaffoldMessenger.of(context).showSnackBar(
+            //   SnackBar(content: Text('ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง!!!')),
+            // );
+            return;
+          }
           // print(msg.accessToken);
           //print(msg.roles);
 
@@ -586,7 +489,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
       ),
     );
   }
-/*
+  /*
   Future<void> secureStorage() async {
     if (secType == "w") {
       // Store credentials
