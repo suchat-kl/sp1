@@ -38,8 +38,9 @@ class _MyLoginPageState extends State<MyLoginPage> {
   final formKey = GlobalKey<FormState>();
   String userName = '';
   String password = '';
-  bool cursorWait = false;
+  // bool cursorWait = false;
   String alertMsg = "";
+  MouseCursor _currentCursor = SystemMouseCursors.basic;
   bool savePwd = true;
   // final storage = const FlutterSecureStorage();
   // String? secUsr = "";
@@ -83,63 +84,66 @@ class _MyLoginPageState extends State<MyLoginPage> {
   @override
   Widget build(BuildContext context) {
     // theme = Theme.of(context);
-    return Scaffold(
-      //  key: globalKey,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text(widget.title, style: TextStyle(color: Colors.white)),
-        centerTitle: true,
-      ),
-      body: Consumer<LoginDetail>(
-        builder: (context, loginDetail, child) => ListView(
-          scrollDirection: Axis.vertical,
-          children: <Widget>[
-            cursorWait ? Center(child: CircularProgressIndicator()) : Text(""),
-            FutureBuilder(
-              future: getMsg(loginDetail),
-              builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Text("ERROR: ${snapshot.error}");
-                } else {
-                  return Container(
-                    color: Colors.green[50],
-                    child: Center(
-                      child: Container(
-                        width: 800,
-                        // height: 500,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          gradient: LinearGradient(
-                            colors: [Colors.blue.shade50, Colors.blue.shade200],
+    return MouseRegion(
+      cursor: _currentCursor,
+      child: Scaffold(
+        //  key: globalKey,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: Text(widget.title, style: TextStyle(color: Colors.white)),
+          centerTitle: true,
+        ),
+        body: Consumer<LoginDetail>(
+          builder: (context, loginDetail, child) => ListView(
+            scrollDirection: Axis.vertical,
+            children: <Widget>[
+              
+              FutureBuilder(
+                future: getMsg(loginDetail),
+                builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Text("ERROR: ${snapshot.error}");
+                  } else {
+                    return Container(
+                      color: Colors.green[50],
+                      child: Center(
+                        child: Container(
+                          width: 800,
+                          // height: 500,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            gradient: LinearGradient(
+                              colors: [Colors.blue.shade50, Colors.blue.shade200],
+                            ),
                           ),
-                        ),
-                        margin: EdgeInsets.all(5),
-                        padding: EdgeInsets.all(5),
-                        child: Form(
-                          key: formKey,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              buildImage(),
-                              buildTextFieldEmail(),
-                              buildTextFieldPassword(),
-                              // buildButtonSignIn(loginDetail),
-                              buildOptionRow(loginDetail),
-                              // buildChkBox(),
-                              buildMsg(loginDetail),
-                            ],
+                          margin: EdgeInsets.all(5),
+                          padding: EdgeInsets.all(5),
+                          child: Form(
+                            key: formKey,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                buildImage(),
+                                buildTextFieldEmail(),
+                                buildTextFieldPassword(),
+                                // buildButtonSignIn(loginDetail),
+                                buildOptionRow(loginDetail),
+                                // buildChkBox(),
+                                buildMsg(loginDetail),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                }
-              },
-            ),
-          ],
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -277,7 +281,11 @@ class _MyLoginPageState extends State<MyLoginPage> {
       onTap: () async {
         if (formKey.currentState!.validate()) {
           // SystemChannels.mouseCursor.invokeMethod<void>('setCursor', 'wait');
-          cursorWait = true;
+          // cursorWait = true;
+          setState(() {
+            _currentCursor = SystemMouseCursors.wait;
+           
+          });
           formKey.currentState!.save();
           // print('$userName : $password');
           // ignore: unused_local_variable
@@ -426,7 +434,13 @@ class _MyLoginPageState extends State<MyLoginPage> {
           //   print("not login");
           // }
           // SystemChannels.mouseCursor.invokeMethod<void>('setCursor', 'basic');
-          cursorWait = false;
+          // cursorWait = false;
+          if (mounted){
+          setState(() {
+            _currentCursor = SystemMouseCursors.basic;
+           
+          });
+          }
         }
       },
       child: Container(

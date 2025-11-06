@@ -34,15 +34,15 @@ class _MenuState extends State<Menu> {
   // final LocalAuthentication _localAuth = LocalAuthentication();
   // Check if biometric authentication is available
   int itemIndex = 1;
-  bool cursorWait = false;
+
   String pwdType = "none";
   String pwd = "x";
   bool accType = true;
   bool register2FA = false;
   final formKey = GlobalKey<FormState>();
   bool disableAll = false;
-  
 
+  MouseCursor _currentCursor = SystemMouseCursors.basic;
   // final _editableKey = GlobalKey<EditableState>();
   // bool _isBiometricAvailable = false;
   // String _authorized = 'Not Authorized';
@@ -154,134 +154,140 @@ class _MenuState extends State<Menu> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar:
-          //  AppBar(title: Text('ระบบสลิปใบภาษีกรมทางหลวง')),
-          AppBar(
-            // automaticallyImplyLeading: false,
-            backgroundColor: Colors.green.shade400,
-            title: Text(
-              appTitle,
-              style: GoogleFonts.notoSansThai(
-                fontSize: 15,
-                color: Colors.white,
-              ),
-
-              // style: TextStyle(color: Colors.white, fontSize: 15,),
-            ),
-            centerTitle: true,
-            actions: <Widget>[
-              Consumer<LoginDetail>(
-                builder: (context, loginDetail, child) => IconButton(
-                  icon: Icon(Icons.exit_to_app),
+    return MouseRegion(
+      cursor: _currentCursor,
+      child: Scaffold(
+        appBar:
+            //  AppBar(title: Text('ระบบสลิปใบภาษีกรมทางหลวง')),
+            AppBar(
+              // automaticallyImplyLeading: false,
+              backgroundColor: Colors.green.shade400,
+              title: Text(
+                appTitle,
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 15,
                   color: Colors.white,
-                  tooltip: "ออกจากระบบ",
-                  iconSize: 50,
-                  alignment: Alignment.center,
-                  onPressed: () {
-                    signOut(context, loginDetail);
-                  },
                 ),
-              ),
-            ],
-          ),
-      body: Consumer<LoginDetail>(
-        builder: (context, loginDetail, child) => FutureBuilder(
-          future: getDocumentRep(loginDetail),
-          builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Text("ERROR: ${snapshot.error}");
-            }
-            // else if (snapshot.connectionState == ConnectionState.waiting)
-            //   return Center(child: CircularProgressIndicator());
-            else
-            // return Center(child: CircularProgressIndicator());
-            {
-              return visibilityPage(loginDetail) ?? SizedBox.shrink();
-            }
-          },
-        ),
-      ),
-      bottomNavigationBar: Consumer<LoginDetail>(
-        builder: (context, loginDetail, child) => BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          iconSize: 35,
-          mouseCursor: SystemMouseCursors.grab,
-          selectedFontSize: 16,
-          unselectedFontSize: 14,
-          selectedIconTheme: IconThemeData(color: Colors.amberAccent, size: 35),
-          selectedItemColor: Colors.amberAccent,
-          unselectedLabelStyle: GoogleFonts.notoSansThai(
-            fontWeight: FontWeight.normal,
-          ),
-          selectedLabelStyle: GoogleFonts.notoSansThai(
-            fontWeight: FontWeight.bold,
-          ),
-          // TextStyle(
-          //   fontWeight: FontWeight.bold,
 
-          // ),
-          backgroundColor: Colors.blueGrey,
-          unselectedIconTheme: IconThemeData(
-            color: Colors.deepOrange.shade50, //Accent
+                // style: TextStyle(color: Colors.white, fontSize: 15,),
+              ),
+              centerTitle: true,
+              actions: <Widget>[
+                Consumer<LoginDetail>(
+                  builder: (context, loginDetail, child) => IconButton(
+                    icon: Icon(Icons.exit_to_app),
+                    color: Colors.white,
+                    tooltip: "ออกจากระบบ",
+                    iconSize: 50,
+                    alignment: Alignment.center,
+                    onPressed: () {
+                      signOut(context, loginDetail);
+                    },
+                  ),
+                ),
+              ],
+            ),
+        body: Consumer<LoginDetail>(
+          builder: (context, loginDetail, child) => FutureBuilder(
+            future: getDocumentRep(loginDetail),
+            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Text("ERROR: ${snapshot.error}");
+              }
+              // else if (snapshot.connectionState == ConnectionState.waiting)
+              //   return Center(child: CircularProgressIndicator());
+              else
+              // return Center(child: CircularProgressIndicator());
+              {
+                return visibilityPage(loginDetail) ?? SizedBox.shrink();
+              }
+            },
           ),
-          unselectedItemColor: Colors.deepOrange.shade50,
-          items: [
-            BottomNavigationBarItem(
-              label: tabName[0],
-              icon: Icon(Icons.handyman_outlined),
+        ),
+        bottomNavigationBar: Consumer<LoginDetail>(
+          builder: (context, loginDetail, child) => BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            iconSize: 35,
+            mouseCursor: SystemMouseCursors.grab,
+            selectedFontSize: 16,
+            unselectedFontSize: 14,
+            selectedIconTheme: IconThemeData(
+              color: Colors.amberAccent,
+              size: 35,
             ),
-            BottomNavigationBarItem(
-              label: tabName[1],
-              icon: Icon(Icons.print_rounded),
+            selectedItemColor: Colors.amberAccent,
+            unselectedLabelStyle: GoogleFonts.notoSansThai(
+              fontWeight: FontWeight.normal,
             ),
-            BottomNavigationBarItem(
-              label: tabName[2],
-              icon: Icon(Icons.print_rounded),
+            selectedLabelStyle: GoogleFonts.notoSansThai(
+              fontWeight: FontWeight.bold,
             ),
-            // BottomNavigationBarItem(
-            //   label: tabName[3],
-            //   icon: Icon(Icons.print_rounded),
+            // TextStyle(
+            //   fontWeight: FontWeight.bold,
+
             // ),
-            // BottomNavigationBarItem(
-            //   label: tabName[4],
-            //   icon: Icon(Icons.attribution_outlined),
-            // ),
-          ],
-          currentIndex: itemIndex,
-          onTap: (index) async {
-            if (disableAll) return;
-            // manaualView = false;
-            switch (index) {
-              case 0:
-                loginDetail.titleBar = tabName[0];
-                break;
-              case 1:
-                loginDetail.titleBar = tabName[1];
-                // await chkFingerPrint(uuid, "");
-                break;
-              case 2:
-                loginDetail.titleBar = tabName[2];
-                break;
-              // case 3:
-              //   loginDetail.titleBar = tabName[3];
-              //   break;
-              // case 4:
-              //   loginDetail.titleBar = tabName[4];
-              //   break;
-              default:
-            }
-            setState(() {
-              itemIndex = index;
-              appTitle = loginDetail.titleBar;
-              // _selectMenu = SelectMenu.mnuNull;
-            });
-            // if (itemIndex == 1 && foundFingerPrint) {
-            //   await popupFingerPrint();
-            // }
-          },
+            backgroundColor: Colors.blueGrey,
+            unselectedIconTheme: IconThemeData(
+              color: Colors.deepOrange.shade50, //Accent
+            ),
+            unselectedItemColor: Colors.deepOrange.shade50,
+            items: [
+              BottomNavigationBarItem(
+                label: tabName[0],
+                icon: Icon(Icons.handyman_outlined),
+              ),
+              BottomNavigationBarItem(
+                label: tabName[1],
+                icon: Icon(Icons.print_rounded),
+              ),
+              BottomNavigationBarItem(
+                label: tabName[2],
+                icon: Icon(Icons.print_rounded),
+              ),
+              // BottomNavigationBarItem(
+              //   label: tabName[3],
+              //   icon: Icon(Icons.print_rounded),
+              // ),
+              // BottomNavigationBarItem(
+              //   label: tabName[4],
+              //   icon: Icon(Icons.attribution_outlined),
+              // ),
+            ],
+            currentIndex: itemIndex,
+            onTap: (index) async {
+              if (disableAll) return;
+              // manaualView = false;
+              switch (index) {
+                case 0:
+                  loginDetail.titleBar = tabName[0];
+                  break;
+                case 1:
+                  loginDetail.titleBar = tabName[1];
+                  // await chkFingerPrint(uuid, "");
+                  break;
+                case 2:
+                  loginDetail.titleBar = tabName[2];
+                  break;
+                // case 3:
+                //   loginDetail.titleBar = tabName[3];
+                //   break;
+                // case 4:
+                //   loginDetail.titleBar = tabName[4];
+                //   break;
+                default:
+              }
+              setState(() {
+                itemIndex = index;
+                appTitle = loginDetail.titleBar;
+                // _selectMenu = SelectMenu.mnuNull;
+              });
+              // if (itemIndex == 1 && foundFingerPrint) {
+              //   await popupFingerPrint();
+              // }
+            },
+          ),
         ),
       ),
     );
@@ -1313,6 +1319,9 @@ class _MenuState extends State<Menu> {
   }
 
   Future<void> processTax(LoginDetail loginDetail) async {
+    setState(() {
+      _currentCursor = SystemMouseCursors.wait;
+    });
     String yt = taxYear;
     String mt = "00";
     String period = "2";
@@ -1352,12 +1361,19 @@ class _MenuState extends State<Menu> {
         throw 'Could not launch $url0';
       }
     }
-
+    if (mounted) {
+      setState(() {
+        _currentCursor = SystemMouseCursors.basic;
+      });
+    }
     // setState(() {});
     // return null;
   }
 
   Future<void> processSlip(LoginDetail loginDetail) async {
+    setState(() {
+      _currentCursor = SystemMouseCursors.wait;
+    });
     String yt = curYear;
     String mt = curMonth;
     String period = "2";
@@ -1397,12 +1413,21 @@ class _MenuState extends State<Menu> {
         throw 'Could not launch $url0';
       }
     }
-
+    if (mounted) {
+      setState(() {
+        _currentCursor = SystemMouseCursors.basic;
+      });
+    }
     // setState(() {});
     // return null;
   }
 
   Future<void> update2FA(LoginDetail loginDetail) async {
+    if (mounted) {
+      setState(() {
+        _currentCursor = SystemMouseCursors.wait;
+      });
+    }
     String url =
         "${loginDetail.urlSal}/update-2fa?idcard=${loginDetail.idcard}";
     http.Response response = await http.get(
@@ -1427,6 +1452,11 @@ class _MenuState extends State<Menu> {
         TypeMsg.warning,
         context,
       );
+    }
+    if (mounted) {
+      setState(() {
+        _currentCursor = SystemMouseCursors.basic;
+      });
     }
   }
 }
