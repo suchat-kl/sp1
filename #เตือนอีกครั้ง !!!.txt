@@ -1,0 +1,15 @@
+#เตือนอีกครั้ง !!!
+
+   Windows 11 เวอร์ชันใหม่ (24H2 และ 25H2) ที่มีการเปิดใช้งานฟีเจอร์ Device Encryption โดยอัตโนมัติ หากเครื่องมีคุณสมบัติดังนี้:
+มี TPM 2.0 (Trusted Platform Module)
+เปิดใช้งาน Secure Boot
+ลงชื่อเข้าใช้ด้วยบัญชี Microsoft ระหว่างการติดตั้ง Windows ใหม่
+
+
+
+#วิธีตรวจสอบและป้องกัน
+ตรวจสอบสถานะ BitLocker โดยพิมพ์ “Manage BitLocker” ใน Windows Search
+เข้าสู่บัญชี Microsoft ที่ https://account.microsoft.com/devices/recoverykey เพื่อดูว่ามี Recovery Key หรือไม่
+บันทึก Recovery Key ไว้ในหลายที่ เช่น USB, ไฟล์, หรือพิมพ์เก็บไว้
+หลีกเลี่ยงการติดตั้ง Windows ใหม่โดยไม่ตรวจสอบการเข้ารหัส
+ใช้บัญชี Local แทน Microsoft Account หากไม่ต้องการให้ BitLocker เปิดเอง
